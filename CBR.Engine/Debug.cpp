@@ -4,9 +4,8 @@
 #include <fcntl.h>
 #include <windows.h>
 
-namespace CBR {
-namespace Engine {
-namespace Debug {
+namespace CBR::Engine::Debug {
+
 
     static void OpenDebugConsole()
     {
@@ -22,9 +21,6 @@ namespace Debug {
         // ¿ÉÑ¡£ºUTF-8 Êä³ö
         SetConsoleOutputCP(CP_UTF8);
     }
-
-} // namespace Debug
-} // namespace Engine
-} // namespace CBR
+} // namespace CBR::Engine::Debug
 
 #endif
