@@ -1,6 +1,4 @@
-#include <iostream>
-#include <cassert>
-#include <Windows.h>
+#include "pch.h"
 
 #include "CBR.Engine/Debug.cpp"
 #include "CBR.Engine/WindowsMain.h"

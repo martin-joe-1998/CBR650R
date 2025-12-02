@@ -1,8 +1,5 @@
+#include "pch.h"
 #ifdef _DEBUG
-#include <cstdio>
-#include <io.h>
-#include <fcntl.h>
-#include <windows.h>
 
 namespace CBR::Engine::Debug {
 
