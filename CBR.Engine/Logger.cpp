@@ -101,13 +101,16 @@ namespace CBR::Engine::Debug
         std::ostringstream oss;
         oss << '[' << GetTimestamp() << "] "
             << '[' << level.ToString() << "] ";
+        // 输出消息
+        oss << message << " ";
+
         if (!file.empty()) {
             // 直接视图切片，避免额外分配
             size_t pos = file.find_last_of("/\\");
             std::string_view fname = (pos == std::string_view::npos) ? file : file.substr(pos + 1);
             oss << '[' << fname << ':' << line << ' ' << func << "] ";
         }
-        oss << message << '\n';
+        oss << '\n';
 
         std::cout << oss.str();
 
