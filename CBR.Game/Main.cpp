@@ -1,10 +1,10 @@
 #include "pch.h"
 #ifdef _DEBUG
-#include "CBR.Engine/Debug.cpp"
+#include "Engine/Debug/DebugManager.h"
 #endif
-#include "CBR.Engine/Logger.h"
-#include "CBR.Engine/MemoryLT.h"
-#include "CBR.Engine/WindowsMain.h"
+#include "Engine/Debug/Logger.h"
+#include "Engine/Debug/MemoryLT.h"
+#include "Engine/WindowsMain.h"
 
 using namespace CBR;
 
@@ -12,7 +12,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 {
 #ifdef _DEBUG
     // Debug 模式下开启控制台，并输出测试的信息
-	Engine::Debug::OpenDebugConsole();
+    Engine::Debug::DebugManager::Initialize();
     LOG_INFO("INFO.");
     LOG_WARN("WARN.");
     LOG_ERROR("ERROR.");

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Logger.h"
+#include "Engine/Debug/Logger.h"
 
 namespace CBR::Engine::Debug
 {

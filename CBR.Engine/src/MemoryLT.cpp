@@ -26,8 +26,8 @@
 // Author: Cristian Vasile
 //--------------------------------------------------------------------------------
 #include "pch.h"
-#include "MemoryLT.h"
-#include "Logger.h"
+#include "Engine/Debug/MemoryLT.h"
+#include "Engine/Debug/Logger.h"
 
 #if defined(_DEBUG) || defined(DEBUG)
 
