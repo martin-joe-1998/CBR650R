@@ -15,39 +15,42 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Debug.cpp">
+    <ClCompile Include="src\WindowsMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WindowsMain.cpp">
+    <ClCompile Include="src\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Application.cpp">
+    <ClCompile Include="src\pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="src\Logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Logger.cpp">
+    <ClCompile Include="src\MemoryLT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MemoryLT.cpp">
+    <ClCompile Include="src\DebugManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="WindowsMain.h">
+    <ClInclude Include="Include\Engine\WindowsMain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Application.h">
+    <ClInclude Include="Include\Engine\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Logger.h">
+    <ClInclude Include="Include\Engine\Debug\Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MemoryLT.h">
+    <ClInclude Include="Include\Engine\Debug\MemoryLT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\Debug\DebugManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
