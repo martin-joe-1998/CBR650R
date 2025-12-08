@@ -67,8 +67,10 @@ namespace CBR::Engine::Debug
     private:
         Logger();
         ~Logger();
+        /// ½ûÖ¹¿½±´
         Logger(const Logger&) = delete;
         Logger& operator=(const Logger&) = delete;
+
         void Write(const LogLevel& level, std::string_view message, std::string_view file, int line, std::string_view func);
         std::string GetTimestamp() const;
         std::string ExtractFilename(std::string_view filepath) const;
