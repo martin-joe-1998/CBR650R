@@ -18,32 +18,15 @@ namespace CBR::Engine::Debug
 #endif
     };
 
+    /// <summary>
+    /// 假定控制台已经存在，只负责写字。
+    /// </summary>
     Logger::Logger()
     {
 #ifdef _WIN32
-        if (!AttachConsole(ATTACH_PARENT_PROCESS)) {
-            m_ownsConsole = AllocConsole();
-        }
-
-        // 只有我们自己新建了控制台时，才重定向 C 的 stdout/stderr
-        if (m_ownsConsole) {
-            FILE* fp;
-            freopen_s(&fp, "CONOUT$", "w", stdout);
-            freopen_s(&fp, "CONOUT$", "w", stderr);
-
-            // 保险起见，重绑后把 iostream 的状态清掉再同步一次
-            std::ios::sync_with_stdio();   // 默认为 true；显式调用以确保同步
-            std::cout.clear();
-            std::clog.clear();
-            std::cerr.clear();
-            std::wcout.clear();
-            std::wclog.clear();
-            std::wcerr.clear();
-        }
-
-        SetConsoleOutputCP(CP_UTF8);
-
+        // 拿到控制台句柄
         m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
         CONSOLE_SCREEN_BUFFER_INFO info{};
         if (m_hConsole && GetConsoleScreenBufferInfo(m_hConsole, &info)) {
             m_defaultAttr = info.wAttributes;
@@ -51,13 +34,11 @@ namespace CBR::Engine::Debug
 #endif
     }
 
+    /// <summary>
+    /// 实例变成了DebugManager的成员变量，不需要自己释放内存
+    /// </summary>
     Logger::~Logger()
     {
-#ifdef _WIN32
-        if (m_ownsConsole) {
-            FreeConsole();
-        }
-#endif
     }
 
     void Logger::Info(std::string_view message, std::string_view file, int line, std::string_view func)

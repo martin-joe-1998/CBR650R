@@ -39,10 +39,11 @@ namespace CBR::Engine::Debug
     class Logger
     {
     public:
-        static Logger& Instance() {
-            static Logger instance;
-            return instance;
-        }
+        Logger();
+        ~Logger();
+        /// 禁止拷贝
+        Logger(const Logger&) = delete;
+        Logger& operator=(const Logger&) = delete;
 
         template<typename... Args>
         void InfoMsg(const std::source_location loc, Args&&... args)
@@ -64,13 +65,8 @@ namespace CBR::Engine::Debug
         void Warn(std::string_view message, std::string_view file, int line, std::string_view func);
         void Error(std::string_view message, std::string_view file, int line, std::string_view func);
         void Debug(std::string_view message, std::string_view file, int line, std::string_view func);
-    private:
-        Logger();
-        ~Logger();
-        /// 禁止拷贝
-        Logger(const Logger&) = delete;
-        Logger& operator=(const Logger&) = delete;
 
+    private:
         void Write(const LogLevel& level, std::string_view message, std::string_view file, int line, std::string_view func);
         std::string GetTimestamp() const;
         std::string ExtractFilename(std::string_view filepath) const;
@@ -89,13 +85,14 @@ namespace CBR::Engine::Debug
 #endif
         std::mutex m_mutex;
     };
-    
+    // 在 DebugManager 中实现，用于宏访问当前全局 Logger
+    Logger& GetLogger() noexcept;
     
 #if defined(_DEBUG)
-    #define LOG_INFO(...)  CBR::Engine::Debug::Logger::Instance().InfoMsg(std::source_location::current(), __VA_ARGS__)
-    #define LOG_WARN(...)  CBR::Engine::Debug::Logger::Instance().WarnMsg(std::source_location::current(), __VA_ARGS__)
-    #define LOG_ERROR(...) CBR::Engine::Debug::Logger::Instance().ErrorMsg(std::source_location::current(), __VA_ARGS__)
-    #define LOG_DEBUG(...) CBR::Engine::Debug::Logger::Instance().DebugMsg(std::source_location::current(), __VA_ARGS__)
+    #define LOG_INFO(...)  CBR::Engine::Debug::GetLogger().InfoMsg(std::source_location::current(), __VA_ARGS__)
+    #define LOG_WARN(...)  CBR::Engine::Debug::GetLogger().WarnMsg(std::source_location::current(), __VA_ARGS__)
+    #define LOG_ERROR(...) CBR::Engine::Debug::GetLogger().ErrorMsg(std::source_location::current(), __VA_ARGS__)
+    #define LOG_DEBUG(...) CBR::Engine::Debug::GetLogger().DebugMsg(std::source_location::current(), __VA_ARGS__)
 #else
     #define LOG_INFO(...) 
     #define LOG_WARN(...) 

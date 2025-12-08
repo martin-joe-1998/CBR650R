@@ -3,7 +3,7 @@
 
 namespace CBR::Engine::Debug
 {
-	void DebugManager::Initialize()
+    void DebugManager::Initialize()
 	{
 		OpenDebugConsole();
 	}
