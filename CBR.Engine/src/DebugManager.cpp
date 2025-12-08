@@ -8,6 +8,13 @@ namespace CBR::Engine::Debug
 		OpenDebugConsole();
 	}
 
+    void DebugManager::Shutdown()
+    {
+#ifdef _WIN32
+        FreeConsole();
+#endif
+    }
+
 	void DebugManager::OpenDebugConsole()
 	{
         // 1) 创建控制台（若想复用父进程控制台可用 AttachConsole(ATTACH_PARENT_PROCESS)）

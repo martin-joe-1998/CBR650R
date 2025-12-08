@@ -47,13 +47,6 @@
 #undef new
 #endif
 
-// Already include in pch
-//#include <cstdio>
-//#include <cstdarg>
-//#include <thread>
-//#include <iostream>
-//#include <array>
-
 namespace CBR::Engine::Debug
 {
     typedef void* (*AllocFuncPtr)(std::size_t, const char*, unsigned int);
@@ -138,7 +131,6 @@ namespace CBR::Engine::Debug
             s_leakTracker->PrintMemoryLeaks();
             s_allocFuncPtr = nullptr;
             s_freeFuncPtr = nullptr;
-            //delete s_leakTracker;
             s_leakTracker = nullptr;
         }
     }

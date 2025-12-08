@@ -48,12 +48,6 @@
 #endif
 void* operator new (std::size_t size, const char* file, int line);
 void* operator new[](std::size_t size, const char* file, int line);
-//void* operator new (std::size_t size) noexcept(false);                 
-//void* operator new[](std::size_t size) noexcept(false);
-//void* operator new (std::size_t size, const std::nothrow_t&) noexcept; 
-//void* operator new[](std::size_t size, const std::nothrow_t&) noexcept;
-//void operator delete (void* p) noexcept;
-//void operator delete[](void* p) noexcept;
 void operator delete (void* p, const char* file, int line) noexcept;
 void operator delete[](void* p, const char* file, int line) noexcept;
 #ifdef _MSC_VER

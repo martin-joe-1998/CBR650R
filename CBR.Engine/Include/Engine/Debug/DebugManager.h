@@ -13,6 +13,7 @@ namespace CBR::Engine::Debug
 		}
 		
 		static void Initialize();
+		static void Shutdown();
 
 		Logger& GetLogger() noexcept { return m_logger; }
 		const Logger& GetLogger() const noexcept { return m_logger; }

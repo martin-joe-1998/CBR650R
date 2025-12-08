@@ -85,6 +85,7 @@ namespace CBR::Engine::Debug
 #endif
         std::mutex m_mutex;
     };
+
     // 在 DebugManager 中实现，用于宏访问当前全局 Logger
     Logger& GetLogger() noexcept;
     

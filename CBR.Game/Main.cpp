@@ -48,6 +48,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     LOG_INFO("Press Enter to exit...");
     std::cin.get();
+
+    Engine::Debug::DebugManager::Instance().Shutdown();
 #endif
     
 	
