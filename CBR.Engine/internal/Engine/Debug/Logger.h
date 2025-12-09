@@ -41,8 +41,8 @@ namespace CBR::Engine::Debug
     public:
         Logger();
         ~Logger() {} // 由DebugManager管理生命周期
-        /// 禁止拷贝
-        Logger(const Logger&) = delete;
+
+        Logger(const Logger&) = delete; // 禁止拷贝
         Logger& operator=(const Logger&) = delete;
 
         template<typename... Args>
