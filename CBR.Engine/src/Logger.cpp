@@ -18,46 +18,27 @@ namespace CBR::Engine::Debug
 #endif
     };
 
+    /// <summary>
+    /// 假定控制台已经存在，只负责写字。
+    /// </summary>
     Logger::Logger()
     {
 #ifdef _WIN32
-        if (!AttachConsole(ATTACH_PARENT_PROCESS)) {
-            m_ownsConsole = AllocConsole();
-        }
+        // 拿到控制台句柄
+        hConsole_ = GetStdHandle(STD_OUTPUT_HANDLE);
 
-        // 只有我们自己新建了控制台时，才重定向 C 的 stdout/stderr
-        if (m_ownsConsole) {
-            FILE* fp;
-            freopen_s(&fp, "CONOUT$", "w", stdout);
-            freopen_s(&fp, "CONOUT$", "w", stderr);
-
-            // 保险起见，重绑后把 iostream 的状态清掉再同步一次
-            std::ios::sync_with_stdio();   // 默认为 true；显式调用以确保同步
-            std::cout.clear();
-            std::clog.clear();
-            std::cerr.clear();
-            std::wcout.clear();
-            std::wclog.clear();
-            std::wcerr.clear();
-        }
-
-        SetConsoleOutputCP(CP_UTF8);
-
-        m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         CONSOLE_SCREEN_BUFFER_INFO info{};
-        if (m_hConsole && GetConsoleScreenBufferInfo(m_hConsole, &info)) {
-            m_defaultAttr = info.wAttributes;
+        if (hConsole_ && GetConsoleScreenBufferInfo(hConsole_, &info)) {
+            defaultAttr_ = info.wAttributes;
         }
 #endif
     }
 
+    /// <summary>
+    /// 实例变成了DebugManager的成员变量，不需要自己释放内存
+    /// </summary>
     Logger::~Logger()
     {
-#ifdef _WIN32
-        if (m_ownsConsole) {
-            FreeConsole();
-        }
-#endif
     }
 
     void Logger::Info(std::string_view message, std::string_view file, int line, std::string_view func)
@@ -82,10 +63,10 @@ namespace CBR::Engine::Debug
 
     void Logger::Write(const LogLevel& level, std::string_view message, std::string_view file, int line, std::string_view func)
     {
-        std::scoped_lock lock(m_mutex);
+        std::scoped_lock lock(mutex_);
 
 #ifdef _WIN32
-        ColorGuard cg(m_hConsole, level.ToColor(), m_defaultAttr);
+        ColorGuard cg(hConsole_, level.ToColor(), defaultAttr_);
 #else
         // 简易 ANSI 映射（示意）
         const char* seq = "\x1b[37m";

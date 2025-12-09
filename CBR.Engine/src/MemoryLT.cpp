@@ -47,14 +47,7 @@
 #undef new
 #endif
 
-// Already include in pch
-//#include <cstdio>
-//#include <cstdarg>
-//#include <thread>
-//#include <iostream>
-//#include <array>
-
-namespace CBR::Engine::Debug
+namespace CBR::Engine::Debug::mlt
 {
     typedef void* (*AllocFuncPtr)(std::size_t, const char*, unsigned int);
     typedef void(*FreeFuncPtr)(void*);
@@ -68,21 +61,21 @@ namespace CBR::Engine::Debug
     struct MemoryAllocationRecord
     {
         /**address returned to the caller after allocation*/
-        void* m_address;
+        void* address_;
 
         /**size of the allocation request*/
-        std::size_t m_size;
+        std::size_t size_;
 
         /**source file of allocation request*/
-        const char* m_file;
+        const char* file_;
 
         /**source line of the allocation request*/
-        unsigned int m_line;
+        unsigned int line_;
 
         /**linked list next node*/
-        MemoryAllocationRecord* m_next;
+        MemoryAllocationRecord* next_;
         /**linked list prev node*/
-        MemoryAllocationRecord* m_prev;
+        MemoryAllocationRecord* prev_;
     };
 
 	class LeakTracker
@@ -100,85 +93,84 @@ namespace CBR::Engine::Debug
         void CheckHeapCorruptionAtAddress(void* address);
 
 	private:
-		MemoryAllocationRecord* m_memoryAllocations;
-		int m_memoryAllocationCount;
-		std::recursive_mutex m_m;
-		std::size_t m_maxSize;
-		std::size_t m_maxLine;
+		MemoryAllocationRecord* memoryAllocations_;
+		int memoryAllocationCount_;
+		std::recursive_mutex mutex_;
+		std::size_t maxSize_;
+		std::size_t maxLine_;
 	};
 
-    static std::mutex m_initMutex;
-    static bool s_heapCorruptionEnabled = false;
-    static int s_heapCorruptionBuferSize = 2048;
-	static AllocFuncPtr s_allocFuncPtr = nullptr;
-	static FreeFuncPtr  s_freeFuncPtr = nullptr;
+    static std::mutex InitMutex_;
+    static bool HeapCorruptionEnabled_ = false;
+    static int HeapCorruptionBuferSize_ = 2048;
+	static AllocFuncPtr AllocFuncPtr_ = nullptr;
+	static FreeFuncPtr  FreeFuncPtr_ = nullptr;
 
     /** We reserve some memory to hold the mem for s_leakTracker */
-    static char s_memleakTracker[sizeof(LeakTracker)] = { 0 };
+    static char MemleakTracker_[sizeof(LeakTracker)] = { 0 };
 
     /** Is the static pointer for leakTracker */
-    static LeakTracker* s_leakTracker = nullptr;
+    static LeakTracker* LeakTracker_ = nullptr;
 
 
     void Init(bool heapCorruptionCheck, int buffer)
     {
-        std::lock_guard<std::mutex> lk(m_initMutex);
-        s_heapCorruptionEnabled = heapCorruptionCheck;
-        s_heapCorruptionBuferSize = buffer;
-        s_leakTracker = new(s_memleakTracker) LeakTracker;
-        s_allocFuncPtr = Alloc;
-		s_freeFuncPtr = Free;
+        std::lock_guard<std::mutex> lk(InitMutex_);
+        HeapCorruptionEnabled_ = heapCorruptionCheck;
+        HeapCorruptionBuferSize_ = buffer;
+        LeakTracker_ = new(MemleakTracker_) LeakTracker;
+        AllocFuncPtr_ = Alloc;
+		FreeFuncPtr_ = Free;
     }
 
     void Close()
     {
-        std::lock_guard<std::mutex> lk(m_initMutex);
-        if (s_leakTracker)
+        std::lock_guard<std::mutex> lk(InitMutex_);
+        if (LeakTracker_)
         {
-            s_leakTracker->PrintMemoryLeaks();
-            s_allocFuncPtr = nullptr;
-            s_freeFuncPtr = nullptr;
-            //delete s_leakTracker;
-            s_leakTracker = nullptr;
+            LeakTracker_->PrintMemoryLeaks();
+            AllocFuncPtr_ = nullptr;
+            FreeFuncPtr_ = nullptr;
+            LeakTracker_ = nullptr;
         }
     }
 
     void CheckHeapCorruption()
     {
-        if (!s_leakTracker)
+        if (!LeakTracker_)
             return;
 
-        s_leakTracker->CheckHeapCorruption();
+        LeakTracker_->CheckHeapCorruption();
     }
 
     void* Alloc(std::size_t size, const char* file, unsigned int line)
     {
-        return s_leakTracker->Alloc(size, file, line);
+        return LeakTracker_->Alloc(size, file, line);
     }
 
     void LeakTrackerExit()
     {
-        s_allocFuncPtr = nullptr;
-        s_freeFuncPtr = nullptr;
+        AllocFuncPtr_ = nullptr;
+        FreeFuncPtr_ = nullptr;
 
-		if (s_leakTracker)
+		if (LeakTracker_)
 		{
-			s_leakTracker->PrintMemoryLeaks();
-            s_leakTracker = nullptr;
+			LeakTracker_->PrintMemoryLeaks();
+            LeakTracker_ = nullptr;
 		}
     }
 
     void Free(void* mem)
     {
-        s_leakTracker->Free(mem);
+        LeakTracker_->Free(mem);
     }
 
 
     LeakTracker::LeakTracker() 
-        : m_memoryAllocations(0)
-        , m_memoryAllocationCount(0)
-        , m_maxSize(0)
-        , m_maxLine(0)
+        : memoryAllocations_(0)
+        , memoryAllocationCount_(0)
+        , maxSize_(0)
+        , maxLine_(0)
     {
         atexit(LeakTrackerExit);
 
@@ -189,7 +181,7 @@ namespace CBR::Engine::Debug
     {
     }
 
-    void* Debug::LeakTracker::Alloc(std::size_t size, const char* file, unsigned int line)
+    void* Debug::mlt::LeakTracker::Alloc(std::size_t size, const char* file, unsigned int line)
     {
         // nothrow new 或者你显式调用的“非跟踪”路径：不记录，直接返回
         if (file == nullptr) {
@@ -200,17 +192,17 @@ namespace CBR::Engine::Debug
         MemoryAllocationRecord* rec = nullptr;
         void* payloadAddr = nullptr;
 
-        if (s_heapCorruptionEnabled) {
+        if (HeapCorruptionEnabled_) {
             // 带哨兵区
             const std::size_t total =
-                sizeof(MemoryAllocationRecord) + size + s_heapCorruptionBuferSize * 2;
+                sizeof(MemoryAllocationRecord) + size + HeapCorruptionBuferSize_ * 2;
             mem = static_cast<unsigned char*>(std::calloc(total, 1));
             if (!mem) {
                 // throwing new 语义：用 bad_alloc 反映 OOM
                 throw std::bad_alloc();
             }
-            rec = reinterpret_cast<MemoryAllocationRecord*>(mem + s_heapCorruptionBuferSize);
-            payloadAddr = mem + s_heapCorruptionBuferSize + sizeof(MemoryAllocationRecord);
+            rec = reinterpret_cast<MemoryAllocationRecord*>(mem + HeapCorruptionBuferSize_);
+            payloadAddr = mem + HeapCorruptionBuferSize_ + sizeof(MemoryAllocationRecord);
         }
         else {
             // 普通路径
@@ -225,20 +217,20 @@ namespace CBR::Engine::Debug
 
         // —— 从这里开始 rec 一定非空 ——
         {
-            std::lock_guard<std::recursive_mutex> lk(m_m);
-            rec->m_address = payloadAddr;
-            rec->m_size = size;      // ← 用 size_t，不要强转 unsigned int
-            rec->m_file = file;
-            rec->m_line = line;
-            rec->m_next = m_memoryAllocations;
-            rec->m_prev = nullptr;
+            std::lock_guard<std::recursive_mutex> lk(mutex_);
+            rec->address_ = payloadAddr;
+            rec->size_ = size;      // ← 用 size_t，不要强转 unsigned int
+            rec->file_ = file;
+            rec->line_ = line;
+            rec->next_ = memoryAllocations_;
+            rec->prev_ = nullptr;
 
-            if (m_maxSize < size) m_maxSize = size;
-            if (m_maxLine < line) m_maxLine = line;
+            if (maxSize_ < size) maxSize_ = size;
+            if (maxLine_ < line) maxLine_ = line;
 
-            if (m_memoryAllocations) m_memoryAllocations->m_prev = rec;
-            m_memoryAllocations = rec;
-            ++m_memoryAllocationCount;
+            if (memoryAllocations_) memoryAllocations_->prev_ = rec;
+            memoryAllocations_ = rec;
+            ++memoryAllocationCount_;
         }
 
         return payloadAddr;
@@ -253,10 +245,10 @@ namespace CBR::Engine::Debug
         unsigned char* mem = nullptr;
         MemoryAllocationRecord* rec = nullptr;
 
-        if (s_heapCorruptionEnabled)
+        if (HeapCorruptionEnabled_)
         {
             /// Backup passed in pointer to access memory allocation record
-            mem = ((unsigned char*)payloadAddr) - sizeof(MemoryAllocationRecord) - s_heapCorruptionBuferSize;
+            mem = ((unsigned char*)payloadAddr) - sizeof(MemoryAllocationRecord) - HeapCorruptionBuferSize_;
 
             rec = (MemoryAllocationRecord*)(((unsigned char*)payloadAddr) - sizeof(MemoryAllocationRecord));
         }
@@ -269,7 +261,7 @@ namespace CBR::Engine::Debug
         }
 
         /// Sanity check: ensure that address in record matches passed in address
-        if (rec->m_address != payloadAddr)
+        if (rec->address_ != payloadAddr)
         {
             // This case could be a memory corruption, but most of the cases are memory allocations that was not tracked (because file was null).
             free(payloadAddr);
@@ -277,7 +269,7 @@ namespace CBR::Engine::Debug
         }
 
         /// Sanity check: ensure that size is smaller than maximum (tracked)
-        if (rec->m_size > m_maxSize)
+        if (rec->size_ > maxSize_)
         {
             std::cout << ("[memory] CORRUPTION: Attempting to free memory address with invalid memory allocation record (wrong size).\n");
             //std::cout << "S";
@@ -285,28 +277,28 @@ namespace CBR::Engine::Debug
         }
 
         /// Sanity check: ensure that line is smaller than maximum (tracked)
-        if (rec->m_line > m_maxLine)
+        if (rec->line_ > maxLine_)
         {
             std::cout << ("[memory] CORRUPTION: Attempting to free memory address with invalid memory allocation record (wrong line).\n");
             //std::cout << "L";
             return;
         }
 
-        if (s_heapCorruptionEnabled)
+        if (HeapCorruptionEnabled_)
         {
             CheckHeapCorruptionAtAddress(payloadAddr);
         }
 
         /// Link this item out
-        m_m.lock();
-        if (m_memoryAllocations == rec)
-            m_memoryAllocations = rec->m_next;
-        if (rec->m_prev)
-            rec->m_prev->m_next = rec->m_next;
-        if (rec->m_next)
-            rec->m_next->m_prev = rec->m_prev;
-        --m_memoryAllocationCount;
-        m_m.unlock();
+        mutex_.lock();
+        if (memoryAllocations_ == rec)
+            memoryAllocations_ = rec->next_;
+        if (rec->prev_)
+            rec->prev_->next_ = rec->next_;
+        if (rec->next_)
+            rec->next_->prev_ = rec->prev_;
+        --memoryAllocationCount_;
+        mutex_.unlock();
 
         /// Free the address from the original alloc location (before mem allocation record)
         free(mem);
@@ -316,72 +308,72 @@ namespace CBR::Engine::Debug
     {
         printf("\n");
 
-		s_leakTracker->m_m.lock();
+		LeakTracker_->mutex_.lock();
         /// Dump general heap memory leaks
-		if (s_leakTracker->m_memoryAllocationCount == 0)
+		if (LeakTracker_->memoryAllocationCount_ == 0)
         {
             LOG_INFO("[memory] All HEAP allocations successfully cleaned up (no leaks detected).");
         }
         else
         {
-            LOG_WARN("[memory] WARNING: %d  HEAP allocations still active in memory.", s_leakTracker->m_memoryAllocationCount);
+            LOG_WARN("[memory] WARNING: %d  HEAP allocations still active in memory.", LeakTracker_->memoryAllocationCount_);
 
-			MemoryAllocationRecord* rec = s_leakTracker->m_memoryAllocations;
+			MemoryAllocationRecord* rec = LeakTracker_->memoryAllocations_;
             
             while (rec)
             {
-                if (strlen(rec->m_file) > 0)
+                if (strlen(rec->file_) > 0)
                 {
-                    LOG_WARN("[memory] LEAK: At address %p, size %zu, %s:%u.\n", +rec->m_address, rec->m_size, rec->m_file, rec->m_line);
+                    LOG_WARN("[memory] LEAK: At address %p, size %zu, %s:%u.\n", +rec->address_, rec->size_, rec->file_, rec->line_);
                 }
-                rec = rec->m_next;
+                rec = rec->next_;
             }
         }
 
-		s_leakTracker->m_m.unlock();
+		LeakTracker_->mutex_.unlock();
     }
 
     void LeakTracker::CheckHeapCorruptionAtAddress(void* address)
     {
         /// Backup passed in pointer to access memory allocation record
-        unsigned char* mem = ((unsigned char*)address) - sizeof(MemoryAllocationRecord) - s_heapCorruptionBuferSize;
+        unsigned char* mem = ((unsigned char*)address) - sizeof(MemoryAllocationRecord) - HeapCorruptionBuferSize_;
 
         MemoryAllocationRecord* rec = (MemoryAllocationRecord*)(((unsigned char*)address) - sizeof(MemoryAllocationRecord));
 
         unsigned char* addrStart = mem;
-        unsigned char* addrEnd = addrStart + s_heapCorruptionBuferSize;
+        unsigned char* addrEnd = addrStart + HeapCorruptionBuferSize_;
         for (; addrStart < addrEnd; addrStart++)
         {
             if (*addrStart != 0)
             {
-                LOG_WARN("[memory] CORRUPTION: before address %p, size %zu, %s:%u.\n", rec->m_address, rec->m_size, rec->m_file, rec->m_line);
+                LOG_WARN("[memory] CORRUPTION: before address %p, size %zu, %s:%u.\n", rec->address_, rec->size_, rec->file_, rec->line_);
                 break;
             }
         }
 
-        addrStart = (unsigned char*)address + rec->m_size;
-        addrEnd = addrStart + s_heapCorruptionBuferSize;
+        addrStart = (unsigned char*)address + rec->size_;
+        addrEnd = addrStart + HeapCorruptionBuferSize_;
         for (; addrStart < addrEnd; addrStart++)
         {
             if (*addrStart != 0)
             {
-                LOG_WARN("[memory] CORRUPTION: after address %p, size %zu, %s:%u.\n", rec->m_address, rec->m_size, rec->m_file, rec->m_line);
+                LOG_WARN("[memory] CORRUPTION: after address %p, size %zu, %s:%u.\n", rec->address_, rec->size_, rec->file_, rec->line_);
             }
         }
     }
 
     void LeakTracker::CheckHeapCorruption()
     {
-        if (!s_heapCorruptionEnabled)
+        if (!HeapCorruptionEnabled_)
             return;
 
-        MemoryAllocationRecord* rec = s_leakTracker->m_memoryAllocations;
+        MemoryAllocationRecord* rec = LeakTracker_->memoryAllocations_;
                       
         while (rec)
         {
-            s_leakTracker->CheckHeapCorruptionAtAddress(rec->m_address);
+            LeakTracker_->CheckHeapCorruptionAtAddress(rec->address_);
 
-            rec = rec->m_next;
+            rec = rec->next_;
         }
     }
 } //CBR::Engine::Debug
@@ -394,8 +386,8 @@ namespace CBR::Engine::Debug
 
 void* operator new (std::size_t size, const char* file, int line)
 {
-	if(CBR::Engine::Debug::s_allocFuncPtr)
-		return CBR::Engine::Debug::s_allocFuncPtr(size, file, line);
+	if(CBR::Engine::Debug::mlt::AllocFuncPtr_)
+		return CBR::Engine::Debug::mlt::AllocFuncPtr_(size, file, line);
 	else
 		return malloc(size);
 }
@@ -439,32 +431,32 @@ void* operator new[](std::size_t size, const std::nothrow_t&) noexcept
 
 void operator delete (void* p) noexcept
 {
-	if(CBR::Engine::Debug::s_freeFuncPtr)
-        CBR::Engine::Debug::s_freeFuncPtr(p);
+	if(CBR::Engine::Debug::mlt::FreeFuncPtr_)
+        CBR::Engine::Debug::mlt::FreeFuncPtr_(p);
 	else
 		free(p);
 }
 
 void operator delete[](void* p) noexcept
 {
-	if(CBR::Engine::Debug::s_freeFuncPtr)
-        CBR::Engine::Debug::s_freeFuncPtr(p);
+	if(CBR::Engine::Debug::mlt::FreeFuncPtr_)
+        CBR::Engine::Debug::mlt::FreeFuncPtr_(p);
 	else
 		free(p);
 }
 
 void operator delete (void* p, const char* file, int line) noexcept
 {
-	if(CBR::Engine::Debug::s_freeFuncPtr)
-        CBR::Engine::Debug::s_freeFuncPtr(p);
+	if(CBR::Engine::Debug::mlt::FreeFuncPtr_)
+        CBR::Engine::Debug::mlt::FreeFuncPtr_(p);
 	else
 		free(p);
 }
 
 void operator delete[](void* p, const char* file, int line) noexcept
 {
-	if(CBR::Engine::Debug::s_freeFuncPtr)
-        CBR::Engine::Debug::s_freeFuncPtr(p);
+	if(CBR::Engine::Debug::mlt::FreeFuncPtr_)
+        CBR::Engine::Debug::mlt::FreeFuncPtr_(p);
 	else
 		free(p);
 }
@@ -473,70 +465,70 @@ void operator delete[](void* p, const char* file, int line) noexcept
 #pragma warning( default : 4290 )
 #endif
 
-namespace CBR::Engine::Debug
+namespace CBR::Engine::Debug::mlt
 {
     void* BaseLeakTracker::operator new(size_t size)
 	{
-		if(Debug::s_allocFuncPtr)
-			return Debug::s_allocFuncPtr(size, nullptr, 0);
+		if(Debug::mlt::AllocFuncPtr_)
+			return Debug::mlt::AllocFuncPtr_(size, nullptr, 0);
 		else
 			return malloc(size);
 	}
 
     void BaseLeakTracker::operator delete(void* p)
 	{
-		if(Debug::s_freeFuncPtr)
-            Debug::s_freeFuncPtr(p);
+		if(Debug::mlt::FreeFuncPtr_)
+            Debug::mlt::FreeFuncPtr_(p);
 		else
 			free(p);
     }
 
     void* BaseLeakTracker::operator new[](size_t size)
 	{
-		if(Debug::s_allocFuncPtr)
-			return Debug::s_allocFuncPtr(size, nullptr, 0);
+		if(Debug::mlt::AllocFuncPtr_)
+			return Debug::mlt::AllocFuncPtr_(size, nullptr, 0);
 		else
 			return malloc(size);
     }
 
     void BaseLeakTracker::operator delete[](void* p)
 	{
-		if(Debug::s_freeFuncPtr)
-            Debug::s_freeFuncPtr(p);
+		if(Debug::mlt::FreeFuncPtr_)
+            Debug::mlt::FreeFuncPtr_(p);
 		else
 			free(p);
 	};
 
     void* BaseLeakTracker::operator new(size_t size, const char *file, int line)
 	{
-		if(Debug::s_allocFuncPtr)
-			return Debug::s_allocFuncPtr(size, file, line);
+		if(Debug::mlt::AllocFuncPtr_)
+			return Debug::mlt::AllocFuncPtr_(size, file, line);
 		else
 			return malloc(size);
 	};
 
     void BaseLeakTracker::operator delete(void* p, const char *file, int line)
 	{
-		if(Debug::s_freeFuncPtr)
-            Debug::s_freeFuncPtr(p);
+		if(Debug::mlt::FreeFuncPtr_)
+            Debug::mlt::FreeFuncPtr_(p);
 		else
 			free(p);
 	};
 
     void* BaseLeakTracker::operator new[](size_t size, const char *file, int line)
 	{
-		if(Debug::s_allocFuncPtr)
-			return Debug::s_allocFuncPtr(size, file, line);
+		if(Debug::mlt::AllocFuncPtr_)
+			return Debug::mlt::AllocFuncPtr_(size, file, line);
 		else
 			return malloc(size);
 	}
 
     void BaseLeakTracker::operator delete[](void* p, const char *file, int line)
 	{
-		if(Debug::s_freeFuncPtr)
-            Debug::s_freeFuncPtr(p);
+		if(Debug::mlt::FreeFuncPtr_)
+            Debug::mlt::FreeFuncPtr_(p);
 		else
 			free(p);
 	};
-} // namespace CBR::Engine::Debug
+} // namespace CBR::Engine::Debug::mlt
 #endif //_DEBUG

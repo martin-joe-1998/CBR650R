@@ -3,7 +3,6 @@
 #include "Engine/Debug/DebugManager.h"
 #endif
 #include "Engine/Debug/Logger.h"
-#include "Engine/Debug/MemoryLT.h"
 #include "Engine/WindowsMain.h"
 
 using namespace CBR;
@@ -13,13 +12,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 #ifdef _DEBUG
     // Debug 模式下开启控制台，并输出测试的信息
     Engine::Debug::DebugManager::Initialize();
+    // 测试一下
     LOG_INFO("INFO.");
     LOG_WARN("WARN.");
     LOG_ERROR("ERROR.");
     LOG_DEBUG("DEBUG");
-
-    // 开启内存泄漏检测
-    Engine::Debug::Init(true, 256);
 #endif
 
     // 通过constructor创建窗口
@@ -43,13 +40,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     delete pWindow;
 
 #ifdef _DEBUG
-    // 关闭内存泄漏检测
-    Engine::Debug::Close();
-
-    LOG_INFO("Press Enter to exit...");
-    std::cin.get();
+    Engine::Debug::DebugManager::Shutdown();
 #endif
     
-	
     return 0;
 }
