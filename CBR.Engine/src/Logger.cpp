@@ -25,11 +25,11 @@ namespace CBR::Engine::Debug
     {
 #ifdef _WIN32
         // 拿到控制台句柄
-        m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        hConsole_ = GetStdHandle(STD_OUTPUT_HANDLE);
 
         CONSOLE_SCREEN_BUFFER_INFO info{};
-        if (m_hConsole && GetConsoleScreenBufferInfo(m_hConsole, &info)) {
-            m_defaultAttr = info.wAttributes;
+        if (hConsole_ && GetConsoleScreenBufferInfo(hConsole_, &info)) {
+            defaultAttr_ = info.wAttributes;
         }
 #endif
     }
@@ -63,10 +63,10 @@ namespace CBR::Engine::Debug
 
     void Logger::Write(const LogLevel& level, std::string_view message, std::string_view file, int line, std::string_view func)
     {
-        std::scoped_lock lock(m_mutex);
+        std::scoped_lock lock(mutex_);
 
 #ifdef _WIN32
-        ColorGuard cg(m_hConsole, level.ToColor(), m_defaultAttr);
+        ColorGuard cg(hConsole_, level.ToColor(), defaultAttr_);
 #else
         // 简易 ANSI 映射（示意）
         const char* seq = "\x1b[37m";

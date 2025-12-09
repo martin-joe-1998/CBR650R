@@ -7,8 +7,8 @@ namespace CBR::Engine::Debug
     // static
     void DebugManager::Initialize()
 	{
-        static bool s_initialized = false;
-        if (s_initialized)
+        static bool Initialized = false;
+        if (Initialized)
             return;
 
         // 打开控制台
@@ -17,7 +17,7 @@ namespace CBR::Engine::Debug
 
         Instance().InitializeImpl();
 
-        s_initialized = true;
+        Initialized = true;
 	}
 
     // static
@@ -26,33 +26,35 @@ namespace CBR::Engine::Debug
         Instance().ShutdownImpl();
     }
 
+
     void DebugManager::InitializeImpl()
     {
 #if defined(_DEBUG) || defined(DEBUG)
-        if (!m_memoryTrackingEnabled)
+        if (!memoryTrackingEnabled_)
         {
             // 开启内存泄漏检测
-            Init(true, 256);
-            m_memoryTrackingEnabled = true;
+            mlt::Init(true, 256);
+            memoryTrackingEnabled_ = true;
         }
 #endif
     }
+
     void DebugManager::ShutdownImpl()
     {
 #if defined(_DEBUG) || defined(DEBUG)
-        if (m_memoryTrackingEnabled)
+        if (memoryTrackingEnabled_)
         {
             // 关闭内存泄漏检测
-            Close();
+            mlt::Close();
 
             LOG_INFO("Press Enter to exit...");
             std::cin.get();
 
-            m_memoryTrackingEnabled = false;
+            memoryTrackingEnabled_ = false;
         }
 #endif
-
 #ifdef _WIN32
+        // 关闭控制台
         FreeConsole();
 #endif
     }

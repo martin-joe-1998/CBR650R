@@ -16,8 +16,8 @@ namespace CBR::Engine::Debug
 		static void Initialize();
 		static void Shutdown();
 
-		Logger& GetLogger() noexcept { return m_logger; }
-		const Logger& GetLogger() const noexcept { return m_logger; }
+		Logger& GetLogger() noexcept { return logger_; }
+		const Logger& GetLogger() const noexcept { return logger_; }
 
 	private:
 		DebugManager() {}
@@ -32,8 +32,8 @@ namespace CBR::Engine::Debug
 		static void OpenDebugConsole();
 
 	private:
-		Logger m_logger;
-		bool m_memoryTrackingEnabled = false;
+		Logger logger_;
+		bool memoryTrackingEnabled_ = false;
 	};
 
 	// 给 Logger.h 里声明的那个函数提供定义

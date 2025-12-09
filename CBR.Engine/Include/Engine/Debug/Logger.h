@@ -79,11 +79,11 @@ namespace CBR::Engine::Debug
         }
     
 #ifdef _WIN32
-        HANDLE m_hConsole = nullptr;
-        WORD   m_defaultAttr = 0;
-        bool   m_ownsConsole = false;
+        HANDLE hConsole_ = nullptr;
+        WORD   defaultAttr_ = 0;
+        bool   ownsConsole_ = false;
 #endif
-        std::mutex m_mutex;
+        std::mutex mutex_;
     };
 
     // 在 DebugManager 中实现，用于宏访问当前全局 Logger

@@ -55,7 +55,7 @@ void operator delete[](void* p, const char* file, int line) noexcept;
 #endif
 
 
-namespace CBR::Engine::Debug
+namespace CBR::Engine::Debug::mlt
 {
 	/** Initialize the MemoryLeakTracker*/
 	void Init(bool heapCorruptionCheck = false, int buffer = 256);
@@ -77,12 +77,12 @@ namespace CBR::Engine::Debug
 		void* operator new[](std::size_t size, const char *file, int line);
 		void operator delete[](void* p, const char *file, int line);
 	};
-} // namespace CBR::Engine::Debug
+} // namespace CBR::Engine::Debug::mlt
 
 #define	new new(__FILE__, __LINE__)
 
 #else //!_DEBUG
-namespace CBR::Engine::Debug
+namespace CBR::Engine::Debug::mlt
 {
 	void Init(bool heapCorruptionCheck = false, int buffer = 256){}
 	void Close() {}
@@ -97,7 +97,7 @@ namespace CBR::Engine::Debug
     public:
 		static void PrintMemoryLeaks(){}
     };
-} // namespace CBR::Engine::Debug
+} // namespace CBR::Engine::Debug::mlt
 
 #endif //_DEBUG
 
