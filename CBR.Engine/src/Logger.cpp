@@ -34,12 +34,6 @@ namespace CBR::Engine::Debug
 #endif
     }
 
-    /// <summary>
-    /// 实例变成了DebugManager的成员变量，不需要自己释放内存
-    /// </summary>
-    Logger::~Logger()
-    {
-    }
 
     void Logger::Info(std::string_view message, std::string_view file, int line, std::string_view func)
     {

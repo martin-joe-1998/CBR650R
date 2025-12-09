@@ -40,7 +40,7 @@ namespace CBR::Engine::Debug
     {
     public:
         Logger();
-        ~Logger();
+        ~Logger() {} // 由DebugManager管理生命周期
         /// 禁止拷贝
         Logger(const Logger&) = delete;
         Logger& operator=(const Logger&) = delete;

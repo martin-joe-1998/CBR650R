@@ -1,9 +1,28 @@
 #include "pch.h"
 #include "Engine/Debug/DebugManager.h"
+#include "Engine/Debug/Logger.h"
 #include "Engine/Debug/MemoryLT.h"
 
 namespace CBR::Engine::Debug
 {
+    DebugManager::DebugManager()
+        : logger_(new Logger())
+    {
+
+    }
+
+    DebugManager::~DebugManager()
+    {
+        delete logger_;
+        logger_ = nullptr;
+    }
+
+    // 给Logger的宏用
+    Logger& GetLogger() noexcept
+    {
+        return DebugManager::Instance().GetLogger();
+    }
+
     // static
     void DebugManager::Initialize()
 	{
@@ -16,6 +35,12 @@ namespace CBR::Engine::Debug
         OpenDebugConsole();
 
         Instance().InitializeImpl();
+
+        // 测试一下
+        LOG_INFO("INFO.");
+        LOG_WARN("WARN.");
+        LOG_ERROR("ERROR.");
+        LOG_DEBUG("DEBUG");
 
         Initialized = true;
 	}

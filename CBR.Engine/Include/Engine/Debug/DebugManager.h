@@ -1,8 +1,9 @@
 #pragma once
-#include "Engine/Debug/Logger.h"
 
 namespace CBR::Engine::Debug
 {
+	class Logger;
+	
 	class DebugManager
 	{
 	public:
@@ -12,16 +13,16 @@ namespace CBR::Engine::Debug
 			return instance;
 		}
 		
-		// Main掉用的
+		// Main调用的
 		static void Initialize();
 		static void Shutdown();
 
-		Logger& GetLogger() noexcept { return logger_; }
-		const Logger& GetLogger() const noexcept { return logger_; }
+		Logger& GetLogger() noexcept { return *logger_; }
+		const Logger& GetLogger() const noexcept { return *logger_; }
 
 	private:
-		DebugManager() {}
-		~DebugManager() = default;
+		DebugManager();
+		~DebugManager();
 
 		DebugManager(const DebugManager&) = delete;
 		DebugManager& operator=(const DebugManager&) = delete;
@@ -32,13 +33,10 @@ namespace CBR::Engine::Debug
 		static void OpenDebugConsole();
 
 	private:
-		Logger logger_;
+		Logger* logger_ = nullptr;
 		bool memoryTrackingEnabled_ = false;
 	};
 
 	// 给 Logger.h 里声明的那个函数提供定义
-	inline Logger& GetLogger() noexcept
-	{
-		return DebugManager::Instance().GetLogger();
-	}
+	inline Logger& GetLogger() noexcept;
 };

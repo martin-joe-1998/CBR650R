@@ -44,10 +44,10 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Engine\Debug\Logger.h">
+    <ClInclude Include="internal\Engine\Debug\Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Engine\Debug\MemoryLT.h">
+    <ClInclude Include="internal\Engine\Debug\MemoryLT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Engine\Debug\DebugManager.h">

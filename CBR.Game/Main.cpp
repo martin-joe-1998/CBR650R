@@ -2,7 +2,7 @@
 #ifdef _DEBUG
 #include "Engine/Debug/DebugManager.h"
 #endif
-#include "Engine/Debug/Logger.h"
+//#include "Engine/Debug/Logger.h"
 #include "Engine/WindowsMain.h"
 
 using namespace CBR;
@@ -12,15 +12,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 #ifdef _DEBUG
     // Debug 模式下开启控制台，并输出测试的信息
     Engine::Debug::DebugManager::Initialize();
-    // 测试一下
-    LOG_INFO("INFO.");
-    LOG_WARN("WARN.");
-    LOG_ERROR("ERROR.");
-    LOG_DEBUG("DEBUG");
 #endif
 
     // 通过constructor创建窗口
-    LOG_INFO("Create Window.");
+    //LOG_INFO("Create Window.");
 	WindowsMain* pWindow = new WindowsMain(hInstance, nCmdShow);
 
     bool running = true;
@@ -28,7 +23,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     {
         if (!pWindow->ProcessMessages())
         {
-            LOG_INFO("Close Window.");
+            //LOG_INFO("Close Window.");
             running = false;
         }
 
