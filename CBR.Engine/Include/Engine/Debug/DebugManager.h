@@ -12,6 +12,7 @@ namespace CBR::Engine::Debug
 			return instance;
 		}
 		
+		// Main掉用的
 		static void Initialize();
 		static void Shutdown();
 
@@ -25,10 +26,14 @@ namespace CBR::Engine::Debug
 		DebugManager(const DebugManager&) = delete;
 		DebugManager& operator=(const DebugManager&) = delete;
 
+		void InitializeImpl();
+		void ShutdownImpl();
+
 		static void OpenDebugConsole();
 
 	private:
 		Logger m_logger;
+		bool m_memoryTrackingEnabled = false;
 	};
 
 	// 给 Logger.h 里声明的那个函数提供定义
