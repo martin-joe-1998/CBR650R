@@ -76,6 +76,10 @@ namespace CBR::Engine::Debug
         std::ostringstream oss;
         oss << '[' << GetTimestamp() << "] "
             << '[' << level.ToString() << "] ";
+        // 对齐各级log的message的首字符
+        if (level.value == LogLevel::Value::Info || level.value == LogLevel::Value::Warn) {
+            oss << " ";
+        }
         // 输出消息
         oss << message << " ";
 

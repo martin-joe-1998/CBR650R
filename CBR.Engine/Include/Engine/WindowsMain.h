@@ -1,7 +1,7 @@
 #pragma once
 #include <Windows.h>
 
-namespace CBR
+namespace CBR::Engine
 {
 	class WindowsMain
 	{
@@ -14,6 +14,9 @@ namespace CBR
 		// 换句话说，你不能让一个已经存在的 WindowsMain 对象通过赋值语句来获得另一个 WindowsMain 的状态
 		WindowsMain& operator =(const WindowsMain&) = delete;
 		~WindowsMain();
+
+		// TODO: 创建窗口，初始化引擎等处理的入口，从Main直接调用
+		static int Run() {}
 
 		/// <summary>
 		/// 轮询并处理系统消息,把消息交给窗口过程函数处理,检测窗口是否收到退出信号

@@ -7,7 +7,7 @@ struct
 	HWND hWnd = nullptr;
 } state;
 
-namespace CBR
+namespace CBR::Engine
 {
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{

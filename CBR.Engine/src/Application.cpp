@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Engine/Application.h"
 
-using namespace CBR;
+using namespace CBR::Engine;
 
 static Application* Instance_ = nullptr;
 
