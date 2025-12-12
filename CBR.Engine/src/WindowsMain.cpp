@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "Engine/WindowsMain.h"
+#include "Engine/GameEngine.h"
+#include "Engine/Debug/Logger.h"
 
 struct
 {
@@ -7,7 +9,7 @@ struct
 	HWND hWnd = nullptr;
 } state;
 
-namespace CBR
+namespace CBR::Engine
 {
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
@@ -24,15 +26,56 @@ namespace CBR
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 
-	WindowsMain::~WindowsMain()
+	int WindowsMain::Run(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 	{
+		UNREFERENCED_PARAMETER(hPrevInstance);
+		UNREFERENCED_PARAMETER(lpCmdLine);
+
+		// 由于目前的管理关系是GameEngine->DebugManager->Logger，所以为了能尽早使用LOG，必须先初始化引擎...
+		if (!GameEngine::Initialize())
+		{
+			GameEngine::Shutdown();
+			return 0;
+		}
+
+		if (FAILED(InitWindow(hInstance, nCmdShow)))
+		{
+			return 0;
+		}
+
+		// TODO: 放到Iteration
+		bool running = true;
+		while (running)
+		{
+			if (!ProcessMessages())
+			{
+				LOG_INFO("Close Window.");
+				running = false;
+			}
+
+			if (!GameEngine::Iteration())
+			{
+				LOG_INFO("Engine iteration ends.");
+				running = false;
+			}
+			// Render
+
+			Sleep(10);
+		}
+
+		GameEngine::Shutdown();
+
 		const wchar_t* CLASS_NAME = L"Window Test";
 
 		UnregisterClass(CLASS_NAME, state.hInstance);
+
+		// TODO
+		return 0;
 	}
 
 	HRESULT WindowsMain::InitWindow(HINSTANCE hInstance, int nCmdShow)
 	{
+		// TODO: 保存这个名字
 		const wchar_t* CLASS_NAME = L"Window Test";
 
 		WNDCLASS wndClass = {};
@@ -84,6 +127,7 @@ namespace CBR
 		}
 
 		ShowWindow(state.hWnd, nCmdShow);
+		LOG_INFO("Successfully Created Window.");
 
 		return S_OK;
 	}
@@ -104,6 +148,5 @@ namespace CBR
 		}
 
 		return true;
-
 	}
 };

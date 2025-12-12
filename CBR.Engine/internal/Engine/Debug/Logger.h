@@ -40,9 +40,9 @@ namespace CBR::Engine::Debug
     {
     public:
         Logger();
-        ~Logger();
-        /// 禁止拷贝
-        Logger(const Logger&) = delete;
+        ~Logger(); // 由DebugManager管理生命周期
+
+        Logger(const Logger&) = delete; // 禁止拷贝
         Logger& operator=(const Logger&) = delete;
 
         template<typename... Args>
@@ -67,6 +67,7 @@ namespace CBR::Engine::Debug
         void Debug(std::string_view message, std::string_view file, int line, std::string_view func);
 
     private:
+        void OpenDebugConsole(); // 目前是Logger在管理console，因为目前只有它能在console上输出信息
         void Write(const LogLevel& level, std::string_view message, std::string_view file, int line, std::string_view func);
         std::string GetTimestamp() const;
         std::string ExtractFilename(std::string_view filepath) const;
