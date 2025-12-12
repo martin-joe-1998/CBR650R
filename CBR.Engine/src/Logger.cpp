@@ -18,9 +18,6 @@ namespace CBR::Engine::Debug
 #endif
     };
 
-    /// <summary>
-    /// 假定控制台已经存在，只负责写字。
-    /// </summary>
     Logger::Logger()
     {
 #ifdef _DEBUG
@@ -36,7 +33,7 @@ namespace CBR::Engine::Debug
         if (hConsole_ && GetConsoleScreenBufferInfo(hConsole_, &info)) {
             defaultAttr_ = info.wAttributes;
         }
-#endif
+#endif // _WIN32
     }
 
     Logger::~Logger()
@@ -44,7 +41,7 @@ namespace CBR::Engine::Debug
 #ifdef _WIN32
         // 关闭控制台
         FreeConsole();
-#endif
+#endif // _WIN32
     }
 
 
@@ -84,7 +81,7 @@ namespace CBR::Engine::Debug
         case LogLevel::Value::Debug: seq = "\x1b[96m"; break; // 亮青
         }
         ColorGuard cg(seq);
-#endif
+#endif // _WIN32
 
         std::ostringstream oss;
         oss << '[' << GetTimestamp() << "] "
@@ -109,7 +106,7 @@ namespace CBR::Engine::Debug
 #ifdef _WIN32
         // （可选）同步给调试器
         OutputDebugStringA(oss.str().c_str());
-#endif
+#endif // _WIN32
     }
 
     std::string Logger::GetTimestamp() const
@@ -164,9 +161,9 @@ namespace CBR::Engine::Debug
         windowRect.Left = 0;
         windowRect.Top = 0;
         windowRect.Right = bufferSize.X - 1;  // 宽度 = Right - Left + 1
-        windowRect.Bottom = 30;                // 可见行数（自己喜欢几行就写多少-1）
+        windowRect.Bottom = 30;               // 可见行数（自己喜欢几行就写多少-1）
 
         SetConsoleWindowInfo(hOut, TRUE, &windowRect);
-#endif
+#endif // _WIN32
     }
 } // namespace CBR::Engine::Debug
