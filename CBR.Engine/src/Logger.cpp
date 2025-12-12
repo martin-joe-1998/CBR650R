@@ -82,30 +82,121 @@ namespace CBR::Engine::Debug
         }
         ColorGuard cg(seq);
 #endif // _WIN32
-
-        std::ostringstream oss;
-        oss << '[' << GetTimestamp() << "] "
-            << '[' << level.ToString() << "] ";
+        // 先构造prefix
+        std::ostringstream prefixOss;
+        prefixOss << '[' << GetTimestamp() << "] "
+                  << '[' << level.ToString() << "] ";
         // 对齐各级log的message的首字符
         if (level.value == LogLevel::Value::Info || level.value == LogLevel::Value::Warn) {
-            oss << " ";
+            prefixOss << ' ';
         }
-        // 输出消息
-        oss << message << " ";
+        // 获取prefix内容和字符串长度
+        const std::string prefix = prefixOss.str();
+        const std::size_t prefixLen = prefix.size();
 
+        // 函数位置信息(留到后面拼接)
+        std::string location;
         if (!file.empty()) {
-            // 直接视图切片，避免额外分配
-            size_t pos = file.find_last_of("/\\");
-            std::string_view fname = (pos == std::string_view::npos) ? file : file.substr(pos + 1);
-            oss << '[' << fname << ':' << line << ' ' << func << "] ";
-        }
-        oss << '\n';
+            std::size_t pos = file.find_last_of("/\\");
+            std::string_view fname = (pos == std::string_view::npos)
+                ? file
+                : file.substr(pos + 1);
 
-        std::cout << oss.str();
+            std::ostringstream locOss;
+            locOss << " [" << fname << ':' << line << ' ' << func << ']';
+            location = locOss.str();
+        }
+
+        // 到函数信息之前的固定长度
+        constexpr std::size_t kMessageColumn = 80;
+        // 防止prefix自己超过这个长度
+        const std::size_t messageWidth =
+            (prefixLen < kMessageColumn) ? (kMessageColumn - prefixLen) : 1;
+
+        std::string_view remaining = message;
+        std::ostringstream out;
+
+        {
+            // 拼接log
+            out << prefix;
+
+            const std::size_t firstChunkLen =
+                std::min<std::size_t>(remaining.size(), messageWidth);
+            std::string_view firstChunk = remaining.substr(0, firstChunkLen);
+            remaining.remove_prefix(firstChunkLen);
+
+            out << firstChunk;
+
+            // 如果这一行的 message 没填满固定宽度，用空格补齐
+            if (firstChunkLen < messageWidth) {
+                out << std::string(messageWidth - firstChunkLen, ' ');
+            }
+
+            // 在固定列之后输出函数位置信息
+            if (!location.empty())
+            {
+                const std::size_t locIndent = kMessageColumn + 3;
+
+                std::size_t locWidth = 80;
+
+#ifdef _WIN32
+                CONSOLE_SCREEN_BUFFER_INFO csbi{};
+                if (hConsole_ && GetConsoleScreenBufferInfo(hConsole_, &csbi))
+                {
+                    const std::size_t consoleWidth = static_cast<std::size_t>(csbi.dwSize.X);
+                    if (consoleWidth > locIndent + 1)
+                    {
+                        locWidth = consoleWidth - locIndent;
+                    }
+                }
+#endif
+
+                std::string_view locView(location);
+
+                // 第一行：当前已经在固定 message 列末尾，只需要输出两个空格 + 第一段 location
+                out << "  ";
+                const std::size_t firstLocLen = std::min<std::size_t>(locView.size(), locWidth);
+                out << locView.substr(0, firstLocLen);
+                locView.remove_prefix(firstLocLen);
+                out << '\n';
+
+                // 后续行：每行先输出 locIndent 个空格，再输出下一段 location
+                while (!locView.empty())
+                {
+                    const std::size_t chunkLen = std::min<std::size_t>(locView.size(), locWidth);
+                    out << std::string(locIndent, ' ')
+                        << locView.substr(0, chunkLen)
+                        << '\n';
+                    locView.remove_prefix(chunkLen);
+                }
+            }
+            else
+            {
+                // 没有函数信息就正常换行
+                out << '\n';
+            }
+        }
+
+        // 后续行
+        while (!remaining.empty()) {
+            const std::size_t chunkLen =
+                std::min<std::size_t>(remaining.size(), messageWidth);
+            std::string_view chunk = remaining.substr(0, chunkLen);
+            remaining.remove_prefix(chunkLen);
+
+            // 打印缩进（和 prefix 等宽的空格），让信息从同一列开始
+            out << std::string(prefixLen, ' ')
+                << chunk
+                << '\n';
+        }
+
+        const std::string finalText = out.str();
+
+        std::cout << finalText;
 
 #ifdef _WIN32
         // （可选）同步给调试器
-        OutputDebugStringA(oss.str().c_str());
+        OutputDebugStringA(finalText.c_str());
 #endif // _WIN32
     }
 
