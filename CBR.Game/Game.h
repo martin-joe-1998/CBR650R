@@ -5,9 +5,9 @@ using namespace CBR::Engine;
 
 namespace CBR::Game
 {
-	class Game : public Application
+	class CBRGame : public Application
 	{
-		bool Initialize() {}
+		bool Initialize() { return true; }
 		void Shotdowm() {}
 	};
 };

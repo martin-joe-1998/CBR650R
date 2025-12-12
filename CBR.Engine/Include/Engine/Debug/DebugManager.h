@@ -1,9 +1,8 @@
 #pragma once
+#include "Engine/Debug/Logger.h"
 
 namespace CBR::Engine::Debug
-{
-	class Logger;
-	
+{	
 	class DebugManager
 	{
 	public:
@@ -13,12 +12,11 @@ namespace CBR::Engine::Debug
 			return instance;
 		}
 		
-		// Mainµ÷ÓÃµÄ
 		static void Initialize();
 		static void Shutdown();
 
-		Logger& GetLogger() noexcept { return *logger_; }
-		const Logger& GetLogger() const noexcept { return *logger_; }
+		Logger& GetLogger() noexcept { return logger_; }
+		const Logger& GetLogger() const noexcept { return logger_; }
 
 	private:
 		DebugManager();
@@ -30,10 +28,8 @@ namespace CBR::Engine::Debug
 		void InitializeImpl();
 		void ShutdownImpl();
 
-		static void OpenDebugConsole();
-
 	private:
-		Logger* logger_ = nullptr;
+		Logger logger_;
 		bool memoryTrackingEnabled_ = false;
 	};
 

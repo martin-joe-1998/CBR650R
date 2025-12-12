@@ -33,6 +33,9 @@
     <ClCompile Include="src\DebugManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\GameEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Engine\WindowsMain.h">
@@ -51,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Engine\Debug\DebugManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Engine\GameEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

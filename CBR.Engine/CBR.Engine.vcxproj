@@ -128,6 +128,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\GameEngine.cpp" />
     <ClCompile Include="src\DebugManager.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Logger.cpp" />
@@ -139,6 +140,7 @@
     <ClCompile Include="src\WindowsMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Engine\GameEngine.h" />
     <ClInclude Include="Include\Engine\Debug\DebugManager.h" />
     <ClInclude Include="Include\Engine\Application.h" />
     <ClInclude Include="internal\Engine\Debug\Logger.h" />
