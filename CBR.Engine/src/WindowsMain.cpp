@@ -37,7 +37,7 @@ namespace CBR::Engine
 			GameEngine::Shutdown();
 			return 0;
 		}
-
+		LOG_INFO("こんにちは");
 		if (FAILED(InitWindow(hInstance, nCmdShow)))
 		{
 			return 0;

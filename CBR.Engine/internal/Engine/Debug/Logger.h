@@ -2,6 +2,9 @@
 
 namespace CBR::Engine::Debug
 {
+    constexpr int kConsoleWindowWidth = 120;
+    constexpr int kConsoleWindowHeight = 31;
+
     struct LogLevel
     {
         enum class Value {
@@ -67,6 +70,8 @@ namespace CBR::Engine::Debug
         void Debug(std::string_view message, std::string_view file, int line, std::string_view func);
 
     private:
+        static std::wstring AnsiToUtf16(std::string_view s);
+
         void OpenDebugConsole(); // 目前是Logger在管理console，因为目前只有它能在console上输出信息
         void Write(const LogLevel& level, std::string_view message, std::string_view file, int line, std::string_view func);
         std::string GetTimestamp() const;
