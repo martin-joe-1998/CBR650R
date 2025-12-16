@@ -18,9 +18,6 @@ namespace CBR::Engine::Debug
 #endif
     };
 
-    /// <summary>
-    /// 假定控制台已经存在，只负责写字。
-    /// </summary>
     Logger::Logger()
     {
 #ifdef _DEBUG
@@ -36,7 +33,7 @@ namespace CBR::Engine::Debug
         if (hConsole_ && GetConsoleScreenBufferInfo(hConsole_, &info)) {
             defaultAttr_ = info.wAttributes;
         }
-#endif
+#endif // _WIN32
     }
 
     Logger::~Logger()
@@ -44,7 +41,7 @@ namespace CBR::Engine::Debug
 #ifdef _WIN32
         // 关闭控制台
         FreeConsole();
-#endif
+#endif // _WIN32
     }
 
 
@@ -84,32 +81,90 @@ namespace CBR::Engine::Debug
         case LogLevel::Value::Debug: seq = "\x1b[96m"; break; // 亮青
         }
         ColorGuard cg(seq);
+#endif // _WIN32
+
+        std::size_t windowWidth = kConsoleWindowWidth;
+#ifdef _WIN32
+        CONSOLE_SCREEN_BUFFER_INFO csbi{};
+        if (hConsole_ && GetConsoleScreenBufferInfo(hConsole_, &csbi)) {
+            windowWidth = static_cast<std::size_t>(csbi.srWindow.Right - csbi.srWindow.Left + 1);
+        }
+        if (windowWidth == 0) windowWidth = kConsoleWindowWidth;
 #endif
 
-        std::ostringstream oss;
-        oss << '[' << GetTimestamp() << "] "
+        // header: [timestamp] [LEVEL] [location]
+        std::ostringstream headerOss;
+        headerOss << '[' << GetTimestamp() << "] "
             << '[' << level.ToString() << "] ";
-        // 对齐各级log的message的首字符
-        if (level.value == LogLevel::Value::Info || level.value == LogLevel::Value::Warn) {
-            oss << " ";
-        }
-        // 输出消息
-        oss << message << " ";
 
+        // location
         if (!file.empty()) {
-            // 直接视图切片，避免额外分配
-            size_t pos = file.find_last_of("/\\");
+            std::size_t pos = file.find_last_of("/\\");
             std::string_view fname = (pos == std::string_view::npos) ? file : file.substr(pos + 1);
-            oss << '[' << fname << ':' << line << ' ' << func << "] ";
+            headerOss << '[' << fname << ':' << line << ' ' << func << ']';
         }
-        oss << '\n';
 
-        std::cout << oss.str();
+        std::string header = headerOss.str();
+
+        // 输出 header（如果 header 超过窗口宽度，也按窗口宽度切行）
+        std::ostringstream out;
+
+        auto WriteWrapped = [&](std::string_view text, std::size_t indentSpaces)
+            {
+                const std::string indent(indentSpaces, ' ');
+
+                // 第一行不缩进
+                bool first = true;
+
+                while (!text.empty())
+                {
+                    if (!first) out << indent;
+
+                    const std::size_t usableWidth =
+                        (windowWidth > indentSpaces) ? (windowWidth - indentSpaces) : 1;
+
+                    const std::size_t len = std::min<std::size_t>(text.size(), usableWidth);
+                    out << text.substr(0, len) << '\n';
+                    text.remove_prefix(len);
+
+                    first = false;
+                }
+            };
+
+        // header：不缩进换行（indent=0）
+        if (!header.empty())
+            WriteWrapped(header, 0);
+        else
+            out << '\n';
+
+        // 输出 message
+        constexpr std::size_t kMessageIndent = 0; // 第二行缩进
+
+        if (message.empty()) {
+            out << std::string(kMessageIndent, ' ') << '\n';
+        }
+        else {
+            // message 第一行开始就缩进 kMessageIndent
+            // 这意味着可用宽度 = windowWidth - kMessageIndent
+            WriteWrapped(message, kMessageIndent);
+        }
+
+        std::string finalText = out.str();
+        finalText += '\n';
 
 #ifdef _WIN32
-        // （可选）同步给调试器
-        OutputDebugStringA(oss.str().c_str());
-#endif
+        std::wstring wtext = AnsiToUtf16(finalText);
+        DWORD written = 0;
+        if (!WriteConsoleW(hConsole_, wtext.c_str(), (DWORD)wtext.size(), &written, nullptr))
+        {
+            std::cout << finalText;
+        }
+
+        // 同步给调试器
+        OutputDebugStringW(wtext.c_str());
+#else
+        std::cout << finalText;
+#endif // _WIN32
     }
 
     std::string Logger::GetTimestamp() const
@@ -133,10 +188,25 @@ namespace CBR::Engine::Debug
         return (pos == std::string_view::npos) ? std::string(filepath) : std::string(filepath.substr(pos + 1));
     }
 
+    std::wstring Logger::AnsiToUtf16(std::string_view s)
+    {
+        if (s.empty()) return {};
+        constexpr UINT kCodePage = CP_ACP;
+
+        int wlen = MultiByteToWideChar(kCodePage, 0, s.data(), (int)s.size(), nullptr, 0);
+        if (wlen <= 0) return {};
+
+        std::wstring w(wlen, L'\0');
+        MultiByteToWideChar(kCodePage, 0, s.data(), (int)s.size(), w.data(), wlen);
+        return w;
+    }
+
     void Logger::OpenDebugConsole()
     {
         // 创建控制台（若想复用父进程控制台可用 AttachConsole(ATTACH_PARENT_PROCESS)）
         AllocConsole();
+        SetConsoleOutputCP(CP_UTF8);
+        SetConsoleCP(CP_UTF8);
 
         // 让 C/CPP 标准流指向这块控制台
         FILE* fp;
@@ -144,7 +214,7 @@ namespace CBR::Engine::Debug
         freopen_s(&fp, "CONOUT$", "w", stderr);
         freopen_s(&fp, "CONIN$", "r", stdin);
 
-        // 可选：UTF-8 输出
+        // UTF-8 输出
         SetConsoleOutputCP(CP_UTF8);
 
 #ifdef _WIN32
@@ -152,21 +222,49 @@ namespace CBR::Engine::Debug
         HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
         // 设置缓冲区大小（列数、行数）
-        // 200 列，1000 行（行数可以设大一点方便滚动）
         COORD bufferSize;
-        bufferSize.X = 200;   // 想要多宽就改这里：常见 160/200/240
-        bufferSize.Y = 1000;
-
+        bufferSize.X = 400;
+        bufferSize.Y = 2000;
         SetConsoleScreenBufferSize(hOut, bufferSize);
 
         // 设置窗口可见区域的大小（必须不超过 bufferSize）
         SMALL_RECT windowRect;
         windowRect.Left = 0;
         windowRect.Top = 0;
-        windowRect.Right = bufferSize.X - 1;  // 宽度 = Right - Left + 1
-        windowRect.Bottom = 30;                // 可见行数（自己喜欢几行就写多少-1）
-
+        windowRect.Right = kConsoleWindowWidth - 1;          // 宽度 = Right - Left + 1
+        windowRect.Bottom = kConsoleWindowHeight - 1; // 可见行数（自己喜欢几行就写多少-1）
         SetConsoleWindowInfo(hOut, TRUE, &windowRect);
-#endif
+
+        // 禁用“到行尾自动换行”
+        DWORD mode = 0;
+        if (GetConsoleMode(hOut, &mode))
+        {
+            mode &= ~ENABLE_WRAP_AT_EOL_OUTPUT;  // 禁用 wrap
+            SetConsoleMode(hOut, mode);
+        }
+
+        // 禁用改变窗口大小
+        HWND hwndConsole = GetConsoleWindow();
+        if (hwndConsole)
+        {
+            // 去掉可调整大小边框(拖拽)和最大化按钮
+            LONG style = GetWindowLong(hwndConsole, GWL_STYLE);
+            style &= ~WS_THICKFRAME;   // 禁止拖拽边框调整大小
+            style &= ~WS_MAXIMIZEBOX;  // 禁止最大化
+            SetWindowLong(hwndConsole, GWL_STYLE, style);
+
+            // 灰掉系统菜单里的 Size/Maximize
+            HMENU hMenu = GetSystemMenu(hwndConsole, FALSE);
+            if (hMenu)
+            {
+                EnableMenuItem(hMenu, SC_SIZE, MF_BYCOMMAND | MF_GRAYED);
+                EnableMenuItem(hMenu, SC_MAXIMIZE, MF_BYCOMMAND | MF_GRAYED);
+            }
+
+            // 让样式立刻生效
+            SetWindowPos(hwndConsole, nullptr, 0, 0, 0, 0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        }
+#endif // _WIN32
     }
 } // namespace CBR::Engine::Debug
