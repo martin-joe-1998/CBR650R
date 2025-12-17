@@ -50,19 +50,19 @@ namespace CBR::Engine::Debug
 
         template<typename... Args>
         void InfoMsg(const std::source_location loc, Args&&... args)
-        { Info(FormatLogMessage(std::forward<Args>(args)...), loc.file_name(), static_cast<int>(loc.line()), loc.function_name()); }
+        { Info(FormatLogMessage(std::forward<Args>(args)...), loc.file_name(), static_cast<int>(loc.line()), ShortFunctionName(loc.function_name())); }
     
         template<typename... Args>
         void WarnMsg(const std::source_location loc, Args&&... args) 
-        { Warn(FormatLogMessage(std::forward<Args>(args)...), loc.file_name(), static_cast<int>(loc.line()), loc.function_name()); }
+        { Warn(FormatLogMessage(std::forward<Args>(args)...), loc.file_name(), static_cast<int>(loc.line()), ShortFunctionName(loc.function_name())); }
     
         template<typename... Args>
         void ErrorMsg(const std::source_location loc, Args&&... args) 
-        { Error(FormatLogMessage(std::forward<Args>(args)...), loc.file_name(), static_cast<int>(loc.line()), loc.function_name()); }
+        { Error(FormatLogMessage(std::forward<Args>(args)...), loc.file_name(), static_cast<int>(loc.line()), ShortFunctionName(loc.function_name())); }
     
         template<typename... Args>
         void DebugMsg(const std::source_location loc, Args&&... args) 
-        { Debug(FormatLogMessage(std::forward<Args>(args)...), loc.file_name(), static_cast<int>(loc.line()), loc.function_name()); }
+        { Debug(FormatLogMessage(std::forward<Args>(args)...), loc.file_name(), static_cast<int>(loc.line()), ShortFunctionName(loc.function_name())); }
     
         void Info(std::string_view message, std::string_view file, int line, std::string_view func);
         void Warn(std::string_view message, std::string_view file, int line, std::string_view func);
@@ -71,6 +71,7 @@ namespace CBR::Engine::Debug
 
     private:
         static std::wstring AnsiToUtf16(std::string_view s);
+        static std::string_view ShortFunctionName(std::string_view sig);
 
         void OpenDebugConsole(); // 目前是Logger在管理console，因为目前只有它能在console上输出信息
         void Write(const LogLevel& level, std::string_view message, std::string_view file, int line, std::string_view func);

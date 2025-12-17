@@ -201,6 +201,16 @@ namespace CBR::Engine::Debug
         return w;
     }
 
+    std::string_view Logger::ShortFunctionName(std::string_view sig)
+    {
+        // 1) 去掉返回类型/调用约定：取最后一个空格后的部分
+        //    "void __cdecl A::B(int)" -> "A::B(int)"
+        if (auto sp = sig.rfind(' '); sp != std::string_view::npos)
+            sig = sig.substr(sp + 1);
+
+        return sig;
+    }
+
     void Logger::OpenDebugConsole()
     {
         // 创建控制台（若想复用父进程控制台可用 AttachConsole(ATTACH_PARENT_PROCESS)）
