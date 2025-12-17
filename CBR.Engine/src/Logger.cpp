@@ -3,6 +3,8 @@
 
 namespace CBR::Engine::Debug
 {
+    std::atomic<uint16_t> Logger::s_logSequence{ 0 };
+
     struct ColorGuard {
 #ifdef _WIN32
         HANDLE h{};
@@ -92,8 +94,11 @@ namespace CBR::Engine::Debug
         if (windowWidth == 0) windowWidth = kConsoleWindowWidth;
 #endif
 
-        // header: [timestamp] [LEVEL] [location]
+        // header: [#logSequence] [timestamp] [LEVEL] [location]
         std::ostringstream headerOss;
+        
+        uint16_t seq = ++s_logSequence;
+        headerOss << "[#" << seq << "] ";
         headerOss << '[' << GetTimestamp() << "] "
             << '[' << level.ToString() << "] ";
 
@@ -101,7 +106,7 @@ namespace CBR::Engine::Debug
         if (!file.empty()) {
             std::size_t pos = file.find_last_of("/\\");
             std::string_view fname = (pos == std::string_view::npos) ? file : file.substr(pos + 1);
-            headerOss << '[' << fname << ':' << line << ' ' << func << ']';
+            headerOss << '[' << fname << ':' << line << " | " << func << ']';
         }
 
         std::string header = headerOss.str();
@@ -203,12 +208,26 @@ namespace CBR::Engine::Debug
 
     std::string_view Logger::ShortFunctionName(std::string_view sig)
     {
-        // 1) 去掉返回类型/调用约定：取最后一个空格后的部分
-        //    "void __cdecl A::B(int)" -> "A::B(int)"
-        if (auto sp = sig.rfind(' '); sp != std::string_view::npos)
-            sig = sig.substr(sp + 1);
+        // 找到参数列表起点
+        const auto lp = sig.find('(');
+        if (lp == std::string_view::npos)
+            return sig;
 
-        return sig;
+        // 函数名前缀部分（含返回类型/调用约定）
+        std::string_view prefix = sig.substr(0, lp);
+        // 参数列表（含括号）
+        std::string_view params = sig.substr(lp);
+
+        // 在 prefix 中找到最后一个空格
+        // 它后面通常就是“函数的限定名”
+        if (auto sp = prefix.rfind(' '); sp != std::string_view::npos)
+            prefix = prefix.substr(sp + 1);
+
+        // 拼回 函数名 + (参数列表)
+        return std::string_view{
+            prefix.data(),
+            prefix.size() + params.size()
+        };
     }
 
     void Logger::OpenDebugConsole()

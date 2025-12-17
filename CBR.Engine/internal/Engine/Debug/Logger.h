@@ -70,6 +70,7 @@ namespace CBR::Engine::Debug
         void Debug(std::string_view message, std::string_view file, int line, std::string_view func);
 
     private:
+        static std::atomic<uint16_t> s_logSequence;
         static std::wstring AnsiToUtf16(std::string_view s);
         static std::string_view ShortFunctionName(std::string_view sig);
 
