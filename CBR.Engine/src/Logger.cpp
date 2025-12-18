@@ -101,6 +101,9 @@ namespace CBR::Engine::Debug
         headerOss << "[#" << seq << "] ";
         headerOss << '[' << GetTimestamp() << "] "
             << '[' << level.ToString() << "] ";
+        if (level.value == LogLevel::Value::Info || level.value == LogLevel::Value::Warn) {
+            headerOss << ' ';
+        }
 
         // location
         if (!file.empty()) {

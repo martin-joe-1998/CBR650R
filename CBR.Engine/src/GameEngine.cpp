@@ -11,7 +11,7 @@ namespace CBR::Engine
 	{
 #ifdef _DEBUG
 		// Debug 模式下开启控制台，并输出测试的信息
-		Debug::DebugManager::Instance().Initialize();
+		Debug::DebugManager::Initialize();
 #endif
 		return true;
 	}
@@ -24,7 +24,7 @@ namespace CBR::Engine
 	bool GameEngine::Shutdown()
 	{
 #ifdef _DEBUG
-		Engine::Debug::DebugManager::Instance().Shutdown();
+		Engine::Debug::DebugManager::Shutdown();
 #endif
 
 		return true;

@@ -7,6 +7,11 @@ struct
 {
 	HINSTANCE hInstance = nullptr;
 	HWND hWnd = nullptr;
+	bool bMinimized = false; // 窗口是否最小化
+	bool bResizing = false;  // 窗口尺寸是否变化
+	bool bActivated = true;  // 游戏是否处于活跃状态
+	bool bClosing = false;   // 游戏是否要关闭
+	const wchar_t* applicationName = NULL;
 } state;
 
 namespace CBR::Engine
@@ -37,30 +42,35 @@ namespace CBR::Engine
 			GameEngine::Shutdown();
 			return 0;
 		}
-		LOG_INFO("日本語出力テスト");
+
 		if (FAILED(InitWindow(hInstance, nCmdShow)))
 		{
 			return 0;
 		}
 
-		// TODO: 放到Iteration
 		bool running = true;
-		while (running)
+		MSG msg = {};
+		while (msg.message != WM_QUIT)
 		{
-			if (!ProcessMessages())
+			// 当有消息时优先处理消息
+			if (PeekMessage(
+				&msg, 	   /* lpMsg         */
+				nullptr,   /* hWnd          */
+				0u, 	   /* wMsgFilterMin */
+				0u, 	   /* wMsgFilterMax */
+				PM_REMOVE  /* wRemoveMsg    */
+			))
 			{
-				LOG_INFO("Close Window.");
-				running = false;
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
 			}
-
-			if (!GameEngine::Iteration())
-			{
-				LOG_INFO("Engine iteration ends.");
-				running = false;
+			// 只有消息列表为空时才执行游戏主循环
+			else if (running) {
+				if (!GameEngine::Iteration())
+				{
+					break;
+				}
 			}
-			// Render
-
-			Sleep(10);
 		}
 
 		GameEngine::Shutdown();
@@ -109,7 +119,7 @@ namespace CBR::Engine
 		state.hWnd = CreateWindowEx(
 			0,
 			CLASS_NAME,
-			L"Title",
+			state.applicationName ? state.applicationName : L"Title",
 			style,
 			rect.left,
 			rect.top,
@@ -135,16 +145,20 @@ namespace CBR::Engine
 	bool WindowsMain::ProcessMessages()
 	{
 		MSG msg = {};
-
-		while (PeekMessage(&msg, nullptr, 0u, 0u, PM_REMOVE))
+		while (msg.message != WM_QUIT)
 		{
-			if (msg.message == WM_QUIT)
+			// 当有消息时优先处理消息
+			if(PeekMessage(
+				&msg, 	   /* lpMsg         */
+				nullptr,   /* hWnd          */
+				0u, 	   /* wMsgFilterMin */
+				0u, 	   /* wMsgFilterMax */
+				PM_REMOVE  /* wRemoveMsg    */
+			))
 			{
-				return false;
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
 			}
-
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
 		}
 
 		return true;
