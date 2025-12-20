@@ -14,7 +14,6 @@ namespace CBR::Engine
 		/// </summary>
 
 	private:
-		static bool ProcessMessages();
 		static HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 	};
 };
