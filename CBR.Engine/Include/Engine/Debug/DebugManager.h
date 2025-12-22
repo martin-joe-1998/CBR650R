@@ -12,7 +12,7 @@ namespace CBR::Engine::Debug
 			return instance;
 		}
 		
-		static void Initialize();
+		static bool Initialize();
 		static void Shutdown();
 
 		Logger& GetLogger() noexcept { return logger_; }

@@ -9,7 +9,7 @@ namespace CBR::Engine
 	private:
 		static bool Initialize();
 		static bool Iteration();
-		static bool Shutdown();
+		static void Shutdown();
 	};
 };
 

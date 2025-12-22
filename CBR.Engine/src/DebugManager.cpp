@@ -22,11 +22,11 @@ namespace CBR::Engine::Debug
     }
 
     // static
-    void DebugManager::Initialize()
+    bool DebugManager::Initialize()
 	{
         static bool Initialized = false;
         if (Initialized)
-            return;
+            return false;
 
         Instance().InitializeImpl();
 
@@ -37,6 +37,7 @@ namespace CBR::Engine::Debug
         LOG_DEBUG("DEBUG.");
 
         Initialized = true;
+        return Initialized;
 	}
 
     // static
@@ -60,17 +61,12 @@ namespace CBR::Engine::Debug
 
     void DebugManager::ShutdownImpl()
     {
-#if defined(_DEBUG) || defined(DEBUG)
+        // ¹Ø±ÕÄÚ´æÐ¹Â©¼ì²â
         if (memoryTrackingEnabled_)
         {
-            // ¹Ø±ÕÄÚ´æÐ¹Â©¼ì²â
             mlt::Close();
-
-            LOG_INFO("Press Enter to exit...");
-            std::cin.get();
 
             memoryTrackingEnabled_ = false;
         }
-#endif
     }
 }
