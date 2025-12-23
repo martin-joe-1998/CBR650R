@@ -10,6 +10,7 @@ namespace CBR::Engine
 		static bool Initialize();
 		static bool Iteration();
 		static void Shutdown();
+		static bool IsInitialized();
 	};
 };
 

@@ -13,6 +13,8 @@ using Finalizer = void(*)(void);
 
 static std::vector<Finalizer> finalizers;
 
+static bool initialized = false;
+
 namespace CBR::Engine
 {
 	bool GameEngine::Initialize()
@@ -44,6 +46,8 @@ namespace CBR::Engine
 		/// TODO: 在这里最后初始化Application的实例
 
 		LOG_INFO("CBR engine initialized Successfully!");
+
+		initialized = true;
 		return true;
 	}
 
@@ -65,5 +69,10 @@ namespace CBR::Engine
 
 		LOG_INFO("Press Enter to exit...");
 		std::cin.get();
+	}
+
+	bool GameEngine::IsInitialized()
+	{
+		return initialized;
 	}
 }

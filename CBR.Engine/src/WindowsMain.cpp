@@ -15,6 +15,7 @@ struct
 	UINT dpi = 96;
 	float dpiScale = 1.0;
 	const wchar_t* applicationName = NULL;
+	const wchar_t* className = NULL;
 } state;
 
 namespace CBR::Engine
@@ -143,7 +144,6 @@ namespace CBR::Engine
 			return 0;
 		}
 
-		bool running = true;
 		MSG msg = {};
 		while (msg.message != WM_QUIT)
 		{
@@ -160,7 +160,7 @@ namespace CBR::Engine
 				DispatchMessage(&msg);
 			}
 			// 只有消息列表为空时才执行游戏主循环
-			else if (running) {
+			else if (!state.bResizing && !state.bMinimized && state.bActivated) {
 				if (!GameEngine::Iteration())
 				{
 					break;
@@ -170,18 +170,15 @@ namespace CBR::Engine
 
 		GameEngine::Shutdown();
 
-		const wchar_t* CLASS_NAME = L"Window Test";
+		UnregisterClass(state.className, state.hInstance);
 
-		UnregisterClass(CLASS_NAME, state.hInstance);
-
-		// TODO
-		return 0;
+		// 让程序的退出码由PostQuitMessage决定，便于外部调试
+		return static_cast<int>(msg.wParam);
 	}
 
 	HRESULT WindowsMain::InitWindow(HINSTANCE hInstance, int nCmdShow)
 	{
-		// TODO: 保存这个名字
-		const wchar_t* CLASS_NAME = L"Window Test";
+		state.className = L"Window Test";
 
 		WNDCLASSEX wcex
 		{
@@ -195,7 +192,7 @@ namespace CBR::Engine
 			.hCursor = LoadCursor(nullptr, IDC_ARROW),
 			.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1),
 			.lpszMenuName = nullptr,
-			.lpszClassName = CLASS_NAME,
+			.lpszClassName = state.className,
 			.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_APPLICATION)),
 		};
 
@@ -221,7 +218,7 @@ namespace CBR::Engine
 
 		state.hWnd = CreateWindowEx(
 			0,
-			CLASS_NAME,
+			state.className,
 			state.applicationName ? state.applicationName : L"Title",
 			style,
 			rect.left,
