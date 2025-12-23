@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Engine/GameEngine.h"
 #include "Engine/Configuration.h"
+#include "Engine/Application.h"
 
 #if CBR_USE_DEBUG_MANAGER
 #include "Engine/Debug/DebugManager.h"
@@ -43,7 +44,11 @@ namespace CBR::Engine
 			}
 		}
 
-		/// TODO: 在这里最后初始化Application的实例
+		// 最后初始化CBRGame的实例
+		if (!Application::GetInstance()->Initialize())
+		{
+			return false;
+		}
 
 		LOG_INFO("CBR engine initialized Successfully!");
 
@@ -59,6 +64,9 @@ namespace CBR::Engine
 	void GameEngine::Shutdown()
 	{
 		/// TODO: 按照初始化顺序反向shutdown,先shutdown Application
+		Application::GetInstance()->Shotdowm();
+		Application::DestroyInstance();
+
 		for (const auto& finalizer : finalizers | std::views::reverse)
 		{
 			finalizer();

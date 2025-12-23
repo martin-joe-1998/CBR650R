@@ -7,8 +7,10 @@ namespace CBR::Game
 {
 	class CBRGame : public Application
 	{
-		bool Initialize() { return true; }
-		void Shotdowm() {}
+		
+	protected:
+		bool Initialize() override;
+		void Shotdowm() override;
 	};
 };
 
