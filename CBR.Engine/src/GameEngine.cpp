@@ -2,6 +2,7 @@
 #include "Engine/GameEngine.h"
 #include "Engine/Configuration.h"
 #include "Engine/Application.h"
+#include "Engine/Utility/Timer.h"
 
 #if CBR_USE_DEBUG_MANAGER
 #include "Engine/Debug/DebugManager.h"
@@ -16,6 +17,10 @@ static std::vector<Finalizer> finalizers;
 
 static bool initialized = false;
 
+using namespace CBR::Engine::Utility;
+// Ensure the static member is defined
+std::unique_ptr<Timer> CBR::Engine::GameEngine::timer_ = nullptr;
+
 namespace CBR::Engine
 {
 	bool GameEngine::Initialize()
@@ -26,9 +31,8 @@ namespace CBR::Engine
 			Initializer initializer;
 			Finalizer finalizer;
 		} singletons[] = {
-			/// TODO: 把DebugManager是否启用用宏定义在Configuration.h里
 #if CBR_USE_DEBUG_MANAGER
-			AUTOLOAD(Debug::DebugManager), // Debug 模式下开启控制台，并输出测试的信息
+			AUTOLOAD(Debug::DebugManager), // Debug 模式下开启控制台，并输出测试的信息等。由于有内存泄漏检测，应该最先初始化
 #endif
 		};
 
@@ -44,6 +48,9 @@ namespace CBR::Engine
 			}
 		}
 
+		// 创建timer
+		timer_ = std::make_unique<Timer>();
+
 		// 最后初始化CBRGame的实例
 		if (!Application::GetInstance()->Initialize())
 		{
@@ -58,14 +65,21 @@ namespace CBR::Engine
 
 	bool GameEngine::Iteration()
 	{
+		if (timer_)
+		{
+			timer_->Tick();
+		}
+		
 		return true;
 	}
 
 	void GameEngine::Shutdown()
 	{
-		/// TODO: 按照初始化顺序反向shutdown,先shutdown Application
+		// 按照初始化顺序反向shutdown
 		Application::GetInstance()->Shotdowm();
 		Application::DestroyInstance();
+
+		timer_.reset();
 
 		for (const auto& finalizer : finalizers | std::views::reverse)
 		{

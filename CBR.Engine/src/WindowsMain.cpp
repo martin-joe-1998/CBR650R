@@ -3,6 +3,8 @@
 #include "Engine/GameEngine.h"
 #include "Engine/Debug/Logger.h"
 
+constexpr RECT DefaultWindowRect = {0, 0, 800, 600}; // left, top, right, bottom
+
 // 窗口状态
 struct
 {
@@ -16,30 +18,44 @@ struct
 	float dpiScale = 1.0;
 	const wchar_t* applicationName = NULL;
 	const wchar_t* className = NULL;
+	std::unordered_set<CBR::Engine::WindowsMain::WinProcDelegate> eventOnWndProc;
 } state;
 
 namespace CBR::Engine
 {
+	void WindowsMain::RegisterWndProc(WinProcDelegate pDelegate)
+	{
+		state.eventOnWndProc.insert(pDelegate);
+	}
+
+	void WindowsMain::UnregisterWndProc(WinProcDelegate pDelegate)
+	{
+		state.eventOnWndProc.erase(pDelegate);
+	}
+	
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-		/// TODO: delegate机制来让消息管线变得更灵活。很多系统都想知道窗口消息（input，UI，游戏本身逻辑），这种可插拔系统可以让下方的switch不那么冗长难以维护
-		// for (const auto& delegate : state.eventOnWndProc)
-		// {
-		// 	auto r = delegate(hWnd, msg, wParam, lParam);
-		// 	if (r.handled)
-		// 		return r.result;
-		// }
+		// delegate机制来让消息管线变得更灵活。很多系统都想知道窗口消息（input，UI，游戏本身逻辑），这种可插拔系统可以让下方的switch不那么冗长难以维护
+		for (const auto& delegate : state.eventOnWndProc)
+		{
+			LRESULT result = delegate(hWnd, uMsg, wParam, lParam);
+			if (FAILED(result))
+				LOG_ERROR("WindowProc delegate returned an error: 0x{:X}", result);
+				DebugBreak();
+		}
 		
 		// TODO: 增加更多处理
 		switch (uMsg)
 		{
 		case WM_CLOSE:
+		{
 			state.bClosing = true;
 			DestroyWindow(hWnd); /// TODO:摧毁窗口的处理放到别处，这里只设置状态
-			return 0;
+		} break;
 		case WM_DESTROY:
+		{
 			PostQuitMessage(0);
-			return 0;
+		} break;
 		case WM_SIZE: // 当窗口尺寸改变时
 		{
 			if (wParam == SIZE_MINIMIZED) // 最小化窗口
@@ -52,20 +68,16 @@ namespace CBR::Engine
 			}
 			/// TODO
 			//else if (Engine::IsInitialized()) // 如引擎已经初始化，则再次获取窗口大小并重绘
-		} 
-		break;
+		} break;
 		case WM_ACTIVATEAPP:
 		{
 			state.bActivated = wParam == TRUE;
-		}
-		break;
+		} break;
 		case WM_KILLFOCUS: // 失去键盘焦点（Alt+Tab切走，点到别的窗口，弹出系统对话框，窗口最小化）时触发。清空输入方式输入卡死
 		{
 			/// TODO
 			// Input::ClearAll // 清空键盘/鼠标/手柄状态
-			return 0;
-		}
-		break;
+		} break;
 		case WM_DPICHANGED: // 屏幕DPI发生变化时触发
 		{
 			UINT dpi = HIWORD(wParam);
@@ -85,10 +97,7 @@ namespace CBR::Engine
 			);
 
 			/// 未来：通知UI系统重新调整大小等UI::OnDpiChanged(scale)，重新创建swapchain，更新字体atlas(ImGUI必做)
-
-			return 0;
-		}
-		break;
+		} break;
 		case WM_INPUT: // 注册了Raw Input (RegisterRawInputDevices(...))后，Windows会在鼠标移动，鼠标按键，键盘输入时发送该消息
 		{
 			//UINT size = 0;
@@ -114,8 +123,6 @@ namespace CBR::Engine
 			//		raw->data.keyboard.Flags
 			//	);
 			//}
-			//
-			//return 0;
 		} 
 		break;
 		default:
@@ -205,30 +212,34 @@ namespace CBR::Engine
 
 		// 目前是无法自由改变大小但可以拖拽窗口
 		DWORD style = /*WS_OVERLAPPEDWINDOW*/WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
-		int width = 640;
-		int height = 480;
-
-		RECT rect;
-		rect.left = 250;
-		rect.top = 250;
-		rect.right = rect.left + width;
-		rect.bottom = rect.top + height;
+		RECT rect = DefaultWindowRect;
 
 		AdjustWindowRect(&rect, style, FALSE);
+
+		int windowWidth = rect.right - rect.left;
+		int windowHeight = rect.bottom - rect.top;
+
+		// 获取屏幕尺寸
+		int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+		int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+		// 计算窗口中心位置
+		int x = (screenWidth - windowWidth) / 2;
+		int y = (screenHeight - windowHeight) / 2;
 
 		state.hWnd = CreateWindowEx(
 			0,
 			state.className,
 			state.applicationName ? state.applicationName : L"Title",
 			style,
-			rect.left,
-			rect.top,
-			rect.right - rect.left,
-			rect.bottom - rect.top,
-			NULL,
-			NULL,
+			x,
+			y,
+			windowWidth,
+			windowHeight,
+			nullptr,
+			nullptr,
 			hInstance,
-			NULL
+			nullptr
 		);
 
 		if (!state.hWnd)

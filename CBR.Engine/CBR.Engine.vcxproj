@@ -138,6 +138,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="src\WindowsMain.cpp" />
+    <ClCompile Include="src\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Engine\GameEngine.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="internal\Engine\Debug\MemoryLT.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Include\Engine\WindowsMain.h" />
+    <ClInclude Include="Include\Engine\Utility\Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
