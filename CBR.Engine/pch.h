@@ -16,3 +16,6 @@
 #include <source_location>
 #include <mutex>
 #include <ranges>
+
+// Renderer
+#include <wrl/client.h> // Microsoft::WRL::ComPtr

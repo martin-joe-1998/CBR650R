@@ -128,6 +128,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\D3D11Renderer.cpp" />
     <ClCompile Include="src\GameEngine.cpp" />
     <ClCompile Include="src\DebugManager.cpp" />
     <ClCompile Include="src\Application.cpp" />
@@ -137,19 +138,23 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\WindowsMain.cpp" />
     <ClCompile Include="src\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="internal\Engine\Graphics\D3D11Renderer.h" />
     <ClInclude Include="Include\Engine\GameEngine.h" />
     <ClInclude Include="Include\Engine\Debug\DebugManager.h" />
     <ClInclude Include="Include\Engine\Application.h" />
     <ClInclude Include="internal\Engine\Configuration.h" />
     <ClInclude Include="internal\Engine\Debug\Logger.h" />
     <ClInclude Include="internal\Engine\Debug\MemoryLT.h" />
+    <ClInclude Include="internal\Engine\Graphics\Renderer.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Include\Engine\WindowsMain.h" />
     <ClInclude Include="Include\Engine\Utility\Timer.h" />
+    <ClInclude Include="Include\Engine\Graphics\IRenderer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
