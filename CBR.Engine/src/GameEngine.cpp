@@ -65,6 +65,10 @@ namespace CBR::Engine
 
 	bool GameEngine::Iteration()
 	{
+		// SceneµÄUpdate
+
+		// Render
+
 		if (timer_)
 		{
 			timer_->Tick();
