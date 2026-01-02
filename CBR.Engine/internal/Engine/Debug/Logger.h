@@ -46,7 +46,7 @@ namespace CBR::Engine::Debug
         ~Logger(); // 由DebugManager管理生命周期
 
         Logger(const Logger&) = delete; // 禁止拷贝
-        Logger& operator=(const Logger&) = delete;
+        Logger& operator=(const Logger&) = delete; // 禁止让一个已经存在的 WindowsMain 对象通过赋值语句来获得另一个 WindowsMain 的状态
 
         template<typename... Args>
         void InfoMsg(const std::source_location loc, Args&&... args)

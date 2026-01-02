@@ -6,11 +6,13 @@
 #include <io.h>
 #include <fcntl.h>
 #include <iostream>
+#include <unordered_set>
+#include <memory>
 
-// Logger
 #include <string_view>
 #include <sstream>
 #include <chrono>
 #include <iomanip>
 #include <source_location>
 #include <mutex>
+#include <ranges>

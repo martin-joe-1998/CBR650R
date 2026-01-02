@@ -4,7 +4,7 @@ namespace CBR::Engine
 {
 	class Application
 	{
-		//friend class GameEngine;
+		friend class GameEngine;
 		//friend class Renderer;
 	protected:
 		virtual bool Initialize() = 0;

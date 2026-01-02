@@ -1,5 +1,9 @@
 #pragma once
 
+namespace CBR::Engine::Utility {
+    class Timer;
+}
+
 namespace CBR::Engine
 {
 	class GameEngine
@@ -9,7 +13,10 @@ namespace CBR::Engine
 	private:
 		static bool Initialize();
 		static bool Iteration();
-		static bool Shutdown();
+		static void Shutdown();
+		static bool IsInitialized();
+
+		static std::unique_ptr<Utility::Timer> timer_;
 	};
 };
 
