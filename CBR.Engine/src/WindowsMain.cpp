@@ -3,7 +3,9 @@
 #include "Engine/GameEngine.h"
 #include "Engine/Debug/Logger.h"
 
-constexpr RECT DefaultWindowRect = {0, 0, 800, 600}; // left, top, right, bottom
+constexpr uint32_t DefaultScreenWidth = 800;
+constexpr uint32_t DefaultScreenHeight = 600;
+constexpr RECT DefaultWindowRect = { 0, 0, DefaultScreenWidth, DefaultScreenHeight }; // left, top, right, bottom
 
 // ´°¿Ú×´Ì¬
 struct
@@ -251,5 +253,25 @@ namespace CBR::Engine
 		LOG_INFO("Successfully Created Window.");
 
 		return S_OK;
+	}
+
+	HWND WindowsMain::GetMainWindowHandle()
+	{
+		return state.hWnd;
+	}
+
+	RECT WindowsMain::GetDefaultWindowRect()
+	{
+		return DefaultWindowRect;
+	}
+
+	uint32_t WindowsMain::GetDefaultScreenWidth()
+	{
+		return DefaultScreenWidth;
+	}
+
+	uint32_t WindowsMain::GetDefaultScreenHeight()
+	{
+		return DefaultScreenHeight;
 	}
 };
