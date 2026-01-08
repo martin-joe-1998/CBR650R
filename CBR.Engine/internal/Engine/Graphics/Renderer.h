@@ -13,6 +13,8 @@ namespace CBR::Engine::Graphics
 		static void Shutdown();
 		static void BeginFrame();
 		static void EndFrame();
+		static void Render();
+
 	private:
 		static inline std::unique_ptr<IRenderer> instance_;
 	};

@@ -13,6 +13,7 @@ namespace CBR::Engine::Graphics
 		void Shutdown() override;
 		void BeginFrame() override;
 		void EndFrame() override;
+		void Render() override;
 
 	private:
 		HRESULT InitDevice();

@@ -39,6 +39,10 @@ namespace CBR::Engine::Graphics
 			return false;
 		}
 
+		/// TODO: 函数化
+		// Set RTV and DSV
+		context_->OMSetRenderTargets(1, renderTargetView_.GetAddressOf(), depthStencilView_.Get());
+
 		SetupViewport();
 
 		initialized_ = true;
@@ -65,9 +69,15 @@ namespace CBR::Engine::Graphics
 
 	}
 
+	void D3D11Renderer::Render()
+	{
+		const float clearColor[4] = { 0.2f, 0.3f, 0.4f, 1.0f };
+		context_->ClearRenderTargetView(renderTargetView_.Get(), clearColor);
+	}
+
 	void D3D11Renderer::EndFrame()
 	{
-
+		swapChain_->Present(0, 0);
 	}
 
 	HRESULT D3D11Renderer::InitDevice()
@@ -179,11 +189,11 @@ namespace CBR::Engine::Graphics
 		//hr = dxgiFactory1->QueryInterface(__uuidof(IDXGIFactory2), reinterpret_cast<void**>(dxgiFactory2.GetAddressOf()));
 		hr = dxgiFactory1.As(&dxgiFactory2);
 
-		RECT rc;
+		//RECT rc;
 		const HWND hWnd = WindowsMain::GetMainWindowHandle();
-		GetClientRect(hWnd, &rc);
-		const UINT width = rc.right - rc.left;
-		const UINT height = rc.top - rc.bottom;
+		//GetClientRect(hWnd, &rc);
+		const UINT width = WindowsMain::GetDefaultScreenWidth();
+		const UINT height = WindowsMain::GetDefaultScreenHeight();
 
 		if (dxgiFactory2.Get())
 		{
@@ -266,10 +276,6 @@ namespace CBR::Engine::Graphics
 		if (FAILED(hr))
 			return hr;
 
-		/// TODO: 函数化
-		// Set RTV
-		context_->OMSetRenderTargets(1, renderTargetView_.GetAddressOf(), nullptr); // Don't have DepthStencilView now
-
 		return S_OK;
 	}
 
@@ -295,16 +301,52 @@ namespace CBR::Engine::Graphics
 			.MiscFlags = 0,
 		};
 
-		/// TODO:
+		if (depthStencil_.Get())
+		{
+			depthStencil_.Reset();
+		}
+
+		hr = device_->CreateTexture2D(
+			&depthDesc, 
+			nullptr, 
+			depthStencil_.GetAddressOf());
+		if (FAILED(hr))
+		{
+			LOG_ERROR("DX11 failed to create depthStencil texture2D! [HRESULT = 0x" + std::to_string(hr) + "]");
+			return hr;
+		}
+
+		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc
+		{
+			.Format = depthDesc.Format,
+			.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D,
+			.Texture2D = {
+				.MipSlice = 0,
+			},
+		};
+
+		if (depthStencilView_.Get())
+		{
+			depthStencilView_.Reset();
+		}
+
+		hr = device_->CreateDepthStencilView(
+			depthStencil_.Get(),
+			&dsvDesc,
+			depthStencilView_.GetAddressOf());
+		if (FAILED(hr))
+		{
+			LOG_ERROR("DX11 failed to create DepthStencilView! [HRESULT = 0x" + std::to_string(hr) + "]");
+			return hr;
+		}
 
 		return S_OK;
 	}
 
 	void D3D11Renderer::SetupViewport()
 	{
-		RECT rc = WindowsMain::GetDefaultWindowRect();
-		const UINT width = rc.right - rc.left;
-		const UINT height = rc.top - rc.bottom;
+		const UINT width = WindowsMain::GetDefaultScreenWidth();
+		const UINT height = WindowsMain::GetDefaultScreenHeight();
 
 		D3D11_VIEWPORT vp;
 		vp.Width = (FLOAT)width;

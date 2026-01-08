@@ -7,6 +7,7 @@
 #if CBR_USE_DEBUG_MANAGER
 #include "Engine/Debug/DebugManager.h"
 #endif
+#include "Engine/Graphics/Renderer.h"
 
 // 参考Keycon的结构，Initializer和Finalizer分别是各个Manager的初始化和关闭函数。
 using Initializer = bool(*)(void);
@@ -33,6 +34,7 @@ namespace CBR::Engine
 		} singletons[] = {
 #if CBR_USE_DEBUG_MANAGER
 			AUTOLOAD(Debug::DebugManager), // Debug 模式下开启控制台，并输出测试的信息等。由于有内存泄漏检测，应该最先初始化
+			AUTOLOAD(Graphics::Renderer),
 #endif
 		};
 
@@ -68,6 +70,9 @@ namespace CBR::Engine
 		// Scene的Update
 
 		// Render
+		Graphics::Renderer::BeginFrame();
+		Graphics::Renderer::Render();
+		Graphics::Renderer::EndFrame();
 
 		if (timer_)
 		{

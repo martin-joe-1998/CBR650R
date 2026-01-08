@@ -25,4 +25,9 @@ namespace CBR::Engine::Graphics
 	{
 		instance_->EndFrame();
 	}
+
+	void Renderer::Render()
+	{
+		instance_->Render();
+	}
 }
