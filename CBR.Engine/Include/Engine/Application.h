@@ -2,10 +2,12 @@
 
 namespace CBR::Engine
 {
+	namespace Graphics { class IRenderer; }
+
 	class Application
 	{
 		friend class GameEngine;
-		//friend class Renderer;
+		friend class Graphics::IRenderer;
 	protected:
 		virtual bool Initialize() = 0;
 		virtual void Shotdowm() = 0;

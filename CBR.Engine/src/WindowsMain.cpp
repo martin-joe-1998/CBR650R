@@ -3,7 +3,9 @@
 #include "Engine/GameEngine.h"
 #include "Engine/Debug/Logger.h"
 
-constexpr RECT DefaultWindowRect = {0, 0, 800, 600}; // left, top, right, bottom
+constexpr uint32_t DefaultScreenWidth = 800;
+constexpr uint32_t DefaultScreenHeight = 600;
+constexpr RECT DefaultWindowRect = { 0, 0, DefaultScreenWidth, DefaultScreenHeight }; // left, top, right, bottom
 
 // 窗口状态
 struct
@@ -71,7 +73,7 @@ namespace CBR::Engine
 		} break;
 		case WM_ACTIVATEAPP:
 		{
-			state.bActivated = wParam == TRUE;
+			state.bActivated = (wParam != 0);
 		} break;
 		case WM_KILLFOCUS: // 失去键盘焦点（Alt+Tab切走，点到别的窗口，弹出系统对话框，窗口最小化）时触发。清空输入方式输入卡死
 		{
@@ -139,15 +141,15 @@ namespace CBR::Engine
 		UNREFERENCED_PARAMETER(hPrevInstance);
 		UNREFERENCED_PARAMETER(lpCmdLine);
 
+		if (FAILED(InitWindow(hInstance, nCmdShow)))
+		{
+			return 0;
+		}
+
 		// 由于目前的管理关系是GameEngine->DebugManager->Logger，所以为了能尽早使用LOG，必须先初始化引擎...
 		if (!GameEngine::Initialize())
 		{
 			GameEngine::Shutdown();
-			return 0;
-		}
-
-		if (FAILED(InitWindow(hInstance, nCmdShow)))
-		{
 			return 0;
 		}
 
@@ -248,8 +250,28 @@ namespace CBR::Engine
 		}
 
 		ShowWindow(state.hWnd, nCmdShow);
-		LOG_INFO("Successfully Created Window.");
+		//LOG_INFO("Successfully Created Window.");
 
 		return S_OK;
+	}
+
+	HWND WindowsMain::GetMainWindowHandle()
+	{
+		return state.hWnd;
+	}
+
+	RECT WindowsMain::GetDefaultWindowRect()
+	{
+		return DefaultWindowRect;
+	}
+
+	uint32_t WindowsMain::GetDefaultScreenWidth()
+	{
+		return DefaultScreenWidth;
+	}
+
+	uint32_t WindowsMain::GetDefaultScreenHeight()
+	{
+		return DefaultScreenHeight;
 	}
 };
