@@ -169,7 +169,8 @@ namespace CBR::Engine
 				DispatchMessage(&msg);
 			}
 			// 只有消息列表为空时才执行游戏主循环
-			else if (!state.bResizing && !state.bMinimized && state.bActivated) {
+			else if (!state.bResizing && !state.bMinimized && /*state.bActivated*/IsWindowVisible(state.hWnd)) 
+			{
 				if (!GameEngine::Iteration())
 				{
 					break;
