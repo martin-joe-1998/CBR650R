@@ -33,8 +33,9 @@ namespace CBR::Engine::Graphics
 		ComPtr<IDXGISwapChain> swapChain_ {};
 		ComPtr<IDXGISwapChain1> swapChain1_ {};
 		ComPtr<ID3D11RenderTargetView> renderTargetView_ {};
-		ComPtr<ID3D11Texture2D> depthStencil_ {};
-		ComPtr<ID3D11DepthStencilView> depthStencilView_ {};
+		ComPtr<ID3D11Texture2D> depthStencil_ {};				// 真正存深度和模板值的 GPU 内存
+		ComPtr<ID3D11DepthStencilView> depthStencilView_ {};	// 告诉 GPU：这张 texture 要被当作 Depth/Stencil 来用
+		// ComPtr<ID3D11DepthStencilState> depthStencilState_ {}; // GPU 如何使用 depthStencil 里的数据的规则
 	};
 };
 

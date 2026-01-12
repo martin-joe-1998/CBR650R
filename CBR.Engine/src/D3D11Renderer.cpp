@@ -66,13 +66,13 @@ namespace CBR::Engine::Graphics
 
 	void D3D11Renderer::BeginFrame()
 	{
-
+		const float clearColor[4] = { 0.2f, 0.3f, 0.4f, 1.0f };
+		context_->ClearRenderTargetView(renderTargetView_.Get(), clearColor);
 	}
 
 	void D3D11Renderer::Render()
 	{
-		const float clearColor[4] = { 0.2f, 0.3f, 0.4f, 1.0f };
-		context_->ClearRenderTargetView(renderTargetView_.Get(), clearColor);
+		
 	}
 
 	void D3D11Renderer::EndFrame()

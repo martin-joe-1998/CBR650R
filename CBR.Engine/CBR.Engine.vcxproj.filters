@@ -45,6 +45,21 @@
     <ClCompile Include="src\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\VertexShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ShaderManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PipelineState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StateCache.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PixelShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Engine\WindowsMain.h">
@@ -81,6 +96,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="internal\Engine\Graphics\Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\Engine\Graphics\VertexShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\Engine\Graphics\ShaderManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\Engine\Graphics\PipelineState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\Engine\Graphics\StateCache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\Engine\Graphics\PixelShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\Engine\Graphics\ShaderKey.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

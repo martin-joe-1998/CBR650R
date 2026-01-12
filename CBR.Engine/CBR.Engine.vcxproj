@@ -131,6 +131,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\PixelShader.cpp" />
+    <ClCompile Include="src\PipelineState.cpp" />
+    <ClCompile Include="src\ShaderManager.cpp" />
+    <ClCompile Include="src\VertexShader.cpp" />
     <ClCompile Include="src\D3D11Renderer.cpp" />
     <ClCompile Include="src\GameEngine.cpp" />
     <ClCompile Include="src\DebugManager.cpp" />
@@ -144,6 +148,7 @@
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\WindowsMain.cpp" />
     <ClCompile Include="src\Timer.cpp" />
+    <ClCompile Include="src\StateCache.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="internal\Engine\Graphics\D3D11Renderer.h" />
@@ -154,10 +159,16 @@
     <ClInclude Include="internal\Engine\Debug\Logger.h" />
     <ClInclude Include="internal\Engine\Debug\MemoryLT.h" />
     <ClInclude Include="internal\Engine\Graphics\Renderer.h" />
+    <ClInclude Include="internal\Engine\Graphics\ShaderKey.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Include\Engine\WindowsMain.h" />
     <ClInclude Include="Include\Engine\Utility\Timer.h" />
     <ClInclude Include="Include\Engine\Graphics\IRenderer.h" />
+    <ClInclude Include="internal\Engine\Graphics\VertexShader.h" />
+    <ClInclude Include="internal\Engine\Graphics\ShaderManager.h" />
+    <ClInclude Include="internal\Engine\Graphics\PipelineState.h" />
+    <ClInclude Include="internal\Engine\Graphics\StateCache.h" />
+    <ClInclude Include="internal\Engine\Graphics\PixelShader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
